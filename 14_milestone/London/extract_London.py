@@ -10,10 +10,9 @@ import time
 import PyPDF2
 import pdfplumber
 import io
-# excel_file = 'London and Capital Asset Management.xlsm'
-# pdf_folder = 'London PDFs'
-excel_file = '14_milestone\London\London and Capital Asset Management.xlsm'
-pdf_folder = '14_milestone\London\London PDFs'
+
+excel_file = 'London and Capital Asset Management.xlsm'
+pdf_folder = 'London PDFs'
 
 def download_pdfs(spreadsheet):
     print('Downloading PDFs...')
@@ -92,7 +91,6 @@ def get_data(file):
 
                 for line in text:
 
-                    # 'Class B GBP 0.00% 1.00% IE00BJMHH440 LCGBBGD ID BJMHH44'
                     if 'as at' in line:
                         # print(line)
                         date_match = re.search(r'(\d{1,2}\s\w+\s\d{4})', line)
@@ -140,8 +138,12 @@ def get_data(file):
                     'Emerging Markets',
 
                     'Government & Supranational',
-                    'Corporate',
-                    'Financials',
+
+                    'Corporate Senior',
+                    'Corporate Subordinated',
+
+                    'Financials Senior',
+                    'Financials Subordinated',
                     'Cash/derivatives',
 
                     'Alternative Funds',
@@ -171,7 +173,7 @@ def get_data(file):
             else:
                 # Если страниц больше двух, завершите цикл
                 break
-        # print(lines)
+        print(lines)
         # Initialize the asset_values dictionary
         asset_values = {word: 0 for word in asset_labels}
         lines_to_remove = []
@@ -191,11 +193,29 @@ def get_data(file):
                         break
             if matched:
                 asset_labels.remove(label)
-
+        
         # Удаляем обработанные строки
         for line in lines_to_remove:
             lines.remove(line)
+        categories = ["Corporate", "Financials"]
+        current_category = None
 
+        for i, line in enumerate(lines):
+            for category in categories:
+                if category in line:
+                    current_category = category
+
+            if "Senior" in line:
+                value = re.search(r'(\d+\.\d+)', line)
+                if value:
+                    key = f"{current_category} Senior"
+                    asset_values[key] = float(value.group(1))
+
+            if "Subordinated" in line:
+                value = re.search(r'(\d+\.\d+)', line)
+                if value:
+                    key = f"{current_category} Subordinated"
+                    asset_values[key] = float(value.group(1))    
         print(asset_values)
         print(total)
  
