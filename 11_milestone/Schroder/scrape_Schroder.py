@@ -26,33 +26,48 @@ def scrape_links(file_urls):
             continue
         try:
             
-            s = Service('chromedriver\chromedriver.exe')
-
-            driver = webdriver.Chrome(service=s)
+            driver = webdriver.Chrome()
 
             if '/fund/' in url:
                 driver.get(url)
-                time.sleep(5)
-                WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.XPATH, "//a[@data-test-id='fundDashboardPageDocumentItem']")))
+                # time.sleep(5)
+                WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.XPATH, "//*[@id='root']/div/div/div[1]/div/div/div[12]/div/fx-document-group-panel/div/fx-documents-panel/div[2]/div/div[2]/div[2]/fx-document-item/div/a")))
+                
                 page_source = driver.page_source
                 soup = BeautifulSoup(page_source, 'html.parser')
-                div_tag = soup.find('div', {'class': 'fund-info valign-middle'})
 
+                driver.quit()
+
+
+
+
+
+                
+
+                div_tag_file_links = soup.find('div', {'class': 'fundexplorer-documentgrouppanel'})
+                factsheet_anchor = div_tag_file_links.find('a', {'data-test-id': 'fundDashboardPageDocumentItem', 'class': 'document-item'}, string="Factsheet", recursive=True)
+                factsheet_link = factsheet_anchor['href']
+                
+                
+                
+                div_tag = soup.find('div', {'class': 'fund-info valign-middle'})
                 # Из этого div извлекаем текст из тега <strong> внутри <h1>
                 fund_name_div = div_tag.h1.strong.text
 
                 # Убираем " F Acc", если оно есть в тексте
                 fund_name_text = fund_name_div.replace(' F Acc', '')
-                anchor = soup.findAll('a', {'data-test-id': 'fundDashboardPageDocumentItem'})
-                for fund_name in anchor:
-                    # fund_name_text = fund_name.h2.text
-                    fact_sheet_link = fund_name['href']
-                    fund_data[fund_name_text] = fact_sheet_link
+
+
+                fund_data[fund_name_text] = factsheet_link
+
+                print(fund_data)
             else:
                 driver.get(url)
-                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".RelatedCardstyled__LinkWrapper-sc-1wbco6m-5")))
+                WebDriverWait(driver, 100).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".RelatedCardstyled__LinkWrapper-sc-1wbco6m-5")))
                 page_source = driver.page_source
 
+                driver.quit()
+                
                 soup = BeautifulSoup(page_source, 'html.parser')
                 divs = soup.findAll('div', {'class': 'RelatedCardstyled__LinkWrapper-sc-1wbco6m-5'})
                 for anchor in divs:
@@ -60,7 +75,7 @@ def scrape_links(file_urls):
                     fund_name = a_part.div.text
                     fact_sheet_link = a_part['href']
                     fund_data[fund_name] = fact_sheet_link
-            driver.quit()
+                    print(fact_sheet_link)
 
         except requests.exceptions.RequestException as e:
             print("Error fetching the URL:", e)
@@ -124,7 +139,8 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    excel_file = 'Schroder Investment Solutions.xlsm'
+    # excel_file = 'Schroder Investment Solutions.xlsm'
+    excel_file = '11_milestone\Schroder\Schroder Investment Solutions.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)
