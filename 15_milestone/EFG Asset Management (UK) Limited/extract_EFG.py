@@ -17,7 +17,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 from bs4 import BeautifulSoup
 
-excel_file = 'EFG Asset Management (UK) Limited.xlsm'
+# excel_file = 'EFG Asset Management (UK) Limited.xlsm'
+excel_file = '15_milestone\EFG Asset Management (UK) Limited\EFG Asset Management (UK) Limited.xlsm'
 
 def get_data(url):
         
@@ -28,9 +29,12 @@ def get_data(url):
     element_present = EC.presence_of_element_located((By.XPATH, '//*[@id="investorType"]/div/div/div/a[1]'))
     element = WebDriverWait(driver, 30).until(element_present)
 
+    button = driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
+    button.click()
+    time.sleep(1)
     button = driver.find_element(By.XPATH, '//*[@id="investorType"]/div/div/div/a[1]')
     button.click()
-
+    
     element_accept = EC.presence_of_element_located((By.XPATH,'//*[@id="modalDisclaimer"]/div/div/div/div/div[1]/div[1]/div[2]/div/a[1]'))
     element = WebDriverWait(driver, 30).until(element_accept)
 
