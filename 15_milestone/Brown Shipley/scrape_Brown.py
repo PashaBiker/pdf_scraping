@@ -31,30 +31,23 @@ def scrape_links(file_urls):
                     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
                 }
 
-                response = requests.get(url, headers=headers)
+                response = session.get(url, headers=headers)
                 request_content = response.content
                 soup = BeautifulSoup(request_content, 'html.parser')
 
-                div_element = soup.find("div", class_="c-text js-text")
+                div_elements = soup.findAll("div", class_="c-text js-text")
 
-                results = []
+                results = {}
 
-                if div_element:
-                    title = div_element.find("div", class_="c-text__title")
-                    links = div_element.find_all("a", href=True)
+                for div_element in div_elements:
+                    title = div_element.find("div", class_="c-text__title").text.strip()
+                    links = div_element.find("a", href=True)
 
                     if title and links:
-                        for link in links:
+                        # for link in links:
                             # Assuming base URL is brownshipley.com
-                            full_url = "https://brownshipley.com" + link['href']
-                            results.append((title.text.strip(), full_url))
-                print(results)
-                # pdf_links = {}
-                # pdf_links[title] = content_url
-
-                # Print the dictionary
-                # for key, value in pdf_links.items():
-                #     print(key, ':', value)
+                        full_url = "https://brownshipley.com" + links['href']
+                        results[title] = full_url
 
         except requests.exceptions.RequestException as e:
             print("Error fetching the URL:", e)
@@ -114,7 +107,8 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    excel_file = '15_milestone\Brown Shipley\Brown Shipley.xlsm'
+    # excel_file = '15_milestone\Brown Shipley\Brown Shipley.xlsm'
+    excel_file = 'Brown Shipley.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)
