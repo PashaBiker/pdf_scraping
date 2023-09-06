@@ -30,7 +30,20 @@ def scrape_links(file_urls):
 
             if '/fund/' in url:
                 driver.get(url)
-                # time.sleep(5)
+                WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.XPATH, '//*[@id="consent_prompt_submit"]')))
+                button = driver.find_element(By.XPATH, '//*[@id="consent_prompt_submit"]')
+                time.sleep(1)
+                button.click()
+                time.sleep(1)
+                
+                WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.XPATH, '//*[@id="consent_prompt_submit"]')))
+                button = driver.find_element(By.XPATH, '//*[@id="consent_prompt_submit"]')
+                time.sleep(1)
+                button.click()
+                
+                breakpoint()
+                
+                
                 WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.XPATH, "//*[@id='root']/div/div/div[1]/div/div/div[12]/div/fx-document-group-panel/div/fx-documents-panel/div[2]/div/div[2]/div[2]/fx-document-item/div/a")))
                 
                 page_source = driver.page_source
