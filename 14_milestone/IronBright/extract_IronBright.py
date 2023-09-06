@@ -11,6 +11,7 @@ import time
 import PyPDF2
 import pdfplumber
 import io
+
 excel_file = 'IronBright Investment Management Limited.xlsm'
 pdf_folder = 'IronBright PDFs'
 
@@ -76,7 +77,10 @@ def download_pdfs(spreadsheet):
 def get_data(file):
 
     date = ''
-
+    AMC = None
+    first_line_found = False
+    one_year = None
+    one_month = None
     try:
         with pdfplumber.open(file) as pdf:
             first_line_found = False
@@ -88,71 +92,68 @@ def get_data(file):
 
                 for line in text:
 
-                    if 'Investment Management' in line and not first_AMC_found:
-                        AMC_number = re.findall(r'\d+\.?\d*', line)
-                        AMC = AMC_number[0]
+                    if 'DFM Charge' in line and not first_AMC_found:
+                        AMC_number = re.findall(r'\d+\.?\d*%', line)
+                        AMC = AMC_number[0].replace('%','')
                         first_AMC_found = True
-                        date_match = re.search(r'(\d{1,2})\w{2} (\w+) (\d{4})', text[1])
-                        if date_match:
-                            date = f"{date_match.group(1)} {date_match.group(2)} {date_match.group(3)}"
+                        date = re.sub(r'(\d)st', r'\1', text[0])
 
-                    if 'Underlying Fund OCF' in line:
-                        OCF_Number = re.findall(r'\d+\.?\d*', line)
-                        OCF = OCF_Number[0]
+                    if 'Portfolio OCF ' in line:
+                        OCF_Number = re.findall(r'\d+\.?\d*%', line)
+                        OCF = OCF_Number[0].replace('%','')
                         # print(line)
 
-                    numbers = re.findall(r'[-+]?\d+\.\d+%', line)
+                    numbers = re.findall(r'[-+]?\d+\.\d+', line)
                     if len(numbers) >= 4 and not first_line_found:
-                        one_year = numbers[2].replace('%','')  # Так как -1.5% это третье значение в списке numbers
+                        one_year = numbers[2]  
                         first_line_found = True
                         
-                # print(date)
-                # print(AMC)
-                # print(OCF)
-                # print(one_year)
-
-                break
+            print(date)
+            print(AMC)
+            print(OCF)
+            print(one_year)
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
 
-    asset_labels = ['Cash',
-                    'Fixed Income',
-                    'Property & Real Assets',
-                    'Absolute Return',
-                    'UK Equity',
-                    'US Equity',
-                    'Europe ex-UK Equity',
-                    'Japanese Equity',
-                    'Global Emerging Market Equity',
-                    'Global Developed Market Equity',]
+    asset_labels = ['UK Equities',
+                    'Global Equities',
+                    'UK Government (Fixed Interest)',
+                    'UK Corporate (Fixed Interest)',
+                    'Global (Fixed Interest)',
+                    'Property',
+                    'US Equities',
+                    'European Equities',
+                    'Far East (ex-Japan) Equities',
+                    'Japanese Equities',
+                    'Emerging Market Equities',
+                    'Commodities',
+                    'Far East Equities',
+                    'Global Property',
+                    'Cash',]
 
     asset_labels = sorted(asset_labels, key=lambda x: len(x), reverse=True)
 
     with pdfplumber.open(file) as pdf:
         for page in pdf.pages:
-            # Извлечение только левой половины страницы
-            left_half = page.crop((0, 0, page.width / 2, page.height))
-            text = left_half.extract_text()  # Извлекаем текст со страницы
-        # print(page_text)
-        
-        # Разделяем текст на строки и добавляем их в список
+            # Определение начальной точки правой части страницы
+            start_x = page.width * 0.625
+            right_part = page.crop((start_x, 0, page.width, page.height))
+            text = right_part.extract_text()
+            
         lines = text.split('\n')
-
-        # Initialize the asset_values dictionary
         asset_values = {word: 0 for word in asset_labels}
         
         total = 0.0
         for line in lines:
-            # Для каждой метки актива в asset_labels проверяем, содержится ли она в строке
             for label in asset_labels:
                 if label in line:
-                    # Если содержится, то используем регулярное выражение, чтобы извлечь числовое значение
-                    value = re.search(r'(\d+\.\d+)', line.replace(label, ''))  # удаляем метку, чтобы избежать конфликтов
+                    value = re.search(r'(\d+\.\d+)', line.replace(label, ''))
                     if value:
                         asset_values[label] = float(value.group(1))
                         asset_labels.remove(label)
                         total += float(value.group(1))
+                        break  # выходим из внутреннего цикла, так как метка найдена
 
         print(asset_values)
         print(total)
@@ -190,15 +191,15 @@ def write_to_sheet(one_year, assets, AMC, OCF, spreadsheet, filename, date):
 
                 cellc = sheet.range('C'+str(i+1))
                 cellc.value = float(AMC)/100
-                cellc.number_format = '0,00%'
+                cellc.number_format = '0.00%'
 
                 celld = sheet.range('D'+str(i+1))
                 celld.value = float(OCF)/100
-                celld.number_format = '0,00%'
+                celld.number_format = '0.00%'
 
                 celle = sheet.range('E'+str(i+1))
                 celle.value = float(one_year)/100
-                celle.number_format = '0,00%'
+                celle.number_format = '0.00%'
 
         wb.save()
 
@@ -230,7 +231,7 @@ def write_to_sheet(one_year, assets, AMC, OCF, spreadsheet, filename, date):
                     cell = sheet.range(
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(str(value).replace(',', '')) / 100
-                    cell.number_format = '0,00%'
+                    cell.number_format = '0.00%'
 
 
     except Exception as e:
@@ -261,7 +262,7 @@ if __name__ == '__main__':
 # TODO UNCOMENT FIRST
 # TODO UNCOMENT FIRST
 
-    # pdf_folder = download_pdfs(excel_file) 
+    pdf_folder = download_pdfs(excel_file) 
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 
