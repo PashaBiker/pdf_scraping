@@ -11,8 +11,8 @@ import time
 import PyPDF2
 import pdfplumber
 import io
-excel_file = 'JM Finn and Co.xlsm'
-pdf_folder = 'JM Finn PDFs'
+excel_file = '14_milestone\JM Finn\JM Finn and Co.xlsm'
+pdf_folder = '14_milestone\JM Finn\JM Finn PDFs'
 
 def download_pdfs(spreadsheet):
     print('Downloading PDFs...')
@@ -261,7 +261,7 @@ if __name__ == '__main__':
 # TODO UNCOMENT FIRST
 # TODO UNCOMENT FIRST
 
-    # pdf_folder = download_pdfs(excel_file) 
+    pdf_folder = download_pdfs(excel_file) 
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 
