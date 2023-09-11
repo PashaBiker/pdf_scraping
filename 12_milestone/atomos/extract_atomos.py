@@ -18,7 +18,7 @@ def download_pdfs(spreadsheet):
         sheet = wb.sheets[1]
 
         # Create the folder if it doesn't exist
-        folder_name = "Tideway pdfs"
+        folder_name = "12_milestone/atomos pdf"
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
 
@@ -78,7 +78,8 @@ def get_data(file):
         text += page.get_text()
 
     text = text.split("\n")
-
+    print(text)
+    # breakpoint()
     is_asset = True
 
     for i, line in enumerate(reversed(text), 1):
@@ -128,6 +129,8 @@ def get_data(file):
 
     assets = dict(zip(asset_name, asset_val))
 
+    print(assets)
+    breakpoint()
     data = {
         "Date": date,
         "Ongoing Charges Figure (OCF)": ocf,
@@ -229,10 +232,10 @@ def column_letter_from_index(index):
 
 if __name__ == "__main__":
     # enter the name of the excel file
-    excel_file = "Tideway Discretionary Fund Management Services.xlsm"
+    excel_file = "12_milestone/atomos/atomos.xlsm"
 
     # pdf_folder = download_pdfs(excel_file)
-    pdf_folder = "Tideway pdfs"
+    pdf_folder = "12_milestone/atomos pdf"
 
     pdfs = glob.glob(pdf_folder + "/*.pdf")
 

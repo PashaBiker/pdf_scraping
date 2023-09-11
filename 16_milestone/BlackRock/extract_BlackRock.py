@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 excel_file = '16_milestone\BlackRock\BlackRock.xlsm'
 
 def get_data(url):
-
+    AMC = 0.0
     driver = webdriver.Chrome()
     driver.get(url)
 
@@ -42,26 +42,50 @@ def get_data(url):
     # print(ocf)
     # print(one_month_one_year_text[2])
 
-    ocf_divs = soup.find_all('div', class_='product-data-list data-points-en_GB')
-    for div in ocf_divs:
-        ongoing_charges_caption = div.find('span', string=" Ongoing Charges Figures ")
-        if ongoing_charges_caption:
-            ongoing_charges_data = ongoing_charges_caption.find_next_sibling('span', class_='data')
-            if ongoing_charges_data:
-                print(ongoing_charges_data.get_text(strip=True))
+    OCF = soup.find('div', class_='col-onch').find('span', class_='data').text.replace('%','')
+    try:
+        AMC = soup.find('div', class_='col-mer').find('span', class_='data').text
+    except:
+        AMC = 0.0
 
-        amc_caption = div.find('span', string=" Annual Management Fee ")
-        if amc_caption:
-            amc_data = amc_caption.find_next_sibling('span', class_='data')
-            if amc_data:
-                print(amc_data.get_text(strip=True))
+    # print(f'Ongoing Charges Figures: {ongoing_charges_figures}')
+    # print(f'Annual Management Fee: {annual_management_fee}')
             
     print(date)
     print(one_month)
     print(one_year)
-    breakpoint()
+    print(OCF)
+    print(AMC)
     # print(assets_text)
+    # Find all 'tr' elements within the 'tbody' tag
 
+    # Extract all rows (tr elements) from the table
+    # Parse the HTML content using Beautiful Soup
+    # Iterate through each row in the table's body
+
+    # Разбор содержимого HTML с помощью Beautiful Soup
+
+    # Извлечение всех div-элементов с классом "fund-component column"
+    divs = soup.find_all("div", {"class": "table-chart-container col-2 column grid"})
+
+
+    data = []
+
+    for div in divs:
+        # Извлечение всех элементов tr для каждого div
+        rows = div.find_all('tr')
+        for row in rows:
+            columns = row.find_all('td')
+            if columns:
+                name = columns[0].text.strip()
+                value = columns[1].text.strip()
+                data.append((name, value))
+
+    # Вывод извлеченных данных
+    for item in data:
+        print(f'Name: {item[0]}, Value: {item[1]}')
+
+    breakpoint()
 
     asset_labels = ['Fixed Income (FI)',
                     'Equity (EQ)',

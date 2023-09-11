@@ -7,7 +7,7 @@
 
 
 from PIL import Image
-im = Image.open("circle.png")
+im = Image.open("12_milestone\Tideway Discretionary Fund Management Services\circle.png")
 im = im.convert("RGB")
 Dated_Fixed_Income  = 0
 Equity_Income = 0

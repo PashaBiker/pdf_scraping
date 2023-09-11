@@ -4,7 +4,7 @@ from pdfminer.high_level import extract_text
 import fitz
 
 
-file = 'Multi-asset Moderate (DD2).pdf'
+file = '12_milestone\Tideway Discretionary Fund Management Services\Multi-asset Moderate (DD2).pdf'
 
 def get_data(file):
     filename = file.split("\\")[-1].split(".")[0]
