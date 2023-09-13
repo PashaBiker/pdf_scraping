@@ -47,9 +47,9 @@ def get_data(url):
 
     OCF = soup.find('div', class_='col-onch').find('span', class_='data').text.replace('%','')
     try:
-        AMC = soup.find('div', class_='col-mer').find('span', class_='data').text.replace('%','')
+        AMC = soup.find('div', class_='col-mer').find('span', class_='data').text
     except:
-        AMC = 0
+        AMC = 0.0
 
     # print(f'Ongoing Charges Figures: {ongoing_charges_figures}')
     # print(f'Annual Management Fee: {annual_management_fee}')
@@ -98,70 +98,74 @@ def get_data(url):
 
     # print(html_content)
 
+    import re
 
     # Extract JSON-like strings from the HTML content
     try:
-        extracted_data = []
+    tabsAssetclassDataTable = re.search(r'var tabsAssetclassDataTable =(\[.*?\]);', html_content).group(1)[1:-1]
+    subTabsCountriesDataTable = re.search(r'var subTabsCountriesDataTable =(\[.*?\]);', html_content).group(1)[1:-1]
+    subTabsRegionsDataTable = re.search(r'var subTabsRegionsDataTable =(\[.*?\]);', html_content).group(1)[1:-1]
 
-        for pattern in [r'var tabsAssetclassDataTable =(\[.*?\]);',
-                        r'var subTabsRegionsDataTable =(\[.*?\]);',
-                        r'var subTabsCountriesDataTable =(\[.*?\]);']:
-            try:
-                match = re.search(pattern, html_content).group(1)[1:-1]
-                extracted_data.append(match)
-            except Exception as e:
-                pass
+    # Combine the extracted data
+    combined_data = f"[{tabsAssetclassDataTable},{subTabsCountriesDataTable},{subTabsRegionsDataTable}]"
 
-        # Соединим все успешно извлеченные данные
-        combined_data = "[" + ",".join(extracted_data) + "]"
-        # Fix the JSON format
-        corrected_json_string = re.sub(r',\s*}', '}', combined_data)
+    # Fix the JSON format
+    corrected_json_string = re.sub(r',\s*}', '}', combined_data)
 
-        # Parse the corrected JSON string
-        data = json.loads(corrected_json_string)
+    # Parse the corrected JSON string
+    data = json.loads(corrected_json_string)
 
-        # Extract name-value pairs
-        name_value_pairs = [(entry["name"], entry["value"]) for entry in data]
-        asset_values = {}
-        sum_values = sum(float(entry["value"]) for entry in data)
-        for name, value in name_value_pairs:
-            asset_values[name] = float(value.replace("%",""))
-        print(asset_values)
-        print(f"\nTotal Sum: {sum_values:.2f}")
-        
-    except:
-        asset_labels = ['Fixed Income (FI)',
-                    'Equity (EQ)',
-                    'Alternatives',
-                    'Cash and/or Derivatives',
-                    'North America',
-                    'Europe',
-                    'Asia Pacific',
-                    'Latin America',
-                    'World',
-                    'Africa',
-                    'Other',
-                    'United States',
-                    'United Kingdom',
-                    'Japan',
-                    'China',
-                    'Germany',
-                    'France',
-                    'Canada',
-                    'Switzerland',
-                    'Australia',
-                    'Supranational',
-                    'Net Derivatives',
-                    'Cash',
-                    'Other',]
+    # Extract name-value pairs
+    name_value_pairs = [(entry["name"], entry["value"]) for entry in data]
+    asset_values = {}
+    sum_values = sum(float(entry["value"]) for entry in data)
+    # asset_labels = ['Fixed Income (FI)',
+    #                 'Equity (EQ)',
+    #                 'Alternatives',
+    #                 'Cash and/or Derivatives',
+    #                 'North America',
+    #                 'Europe',
+    #                 'Asia Pacific',
+    #                 'Latin America',
+    #                 'World',
+    #                 'Africa',
+    #                 'Other',
+    #                 'United States',
+    #                 'United Kingdom',
+    #                 'Japan',
+    #                 'China',
+    #                 'Germany',
+    #                 'France',
+    #                 'Canada',
+    #                 'Switzerland',
+    #                 'Australia',
+    #                 'Supranational',
+    #                 'Net Derivatives',
+    #                 'Cash',
+    #                 'Other',]
 
-        asset_labels = sorted(asset_labels, key=lambda x: len(x), reverse=True)
-        asset_values = {word: 0 for word in asset_labels}
-        
-    return one_year,one_month, asset_values, OCF,AMC, date
+    # asset_labels = sorted(asset_labels, key=lambda x: len(x), reverse=True)
+
+    # asset_values = {word: 0 for word in asset_labels}
+    # total = 0.0
+    # for line in assets_text:
+    #     for label in asset_labels:
+    #         if label in line:
+    #             match = re.search(r'(\d+\.\d+)%', line)
+    #             if match:
+    #                 asset_values[label] = float(match.group(1))
+    #                 total += float(match.group(1))
+    # print(asset_values)
+    # print(total)
+    for name, value in name_value_pairs:
+        asset_values[name] = float(value)
+    print(asset_values)
+    print(f"\nTotal Sum: {sum_values:.2f}")
+
+    return one_year,one_month, asset_values, OCF, date
     # return asset_values, date
 
-def write_to_sheet(one_year,one_month, assets, OCF,AMC, spreadsheet, filename, date):
+def write_to_sheet(one_year,one_month, assets, OCF, spreadsheet, filename, date):
 
     try:
         app = xw.App(visible=False)
@@ -181,19 +185,15 @@ def write_to_sheet(one_year,one_month, assets, OCF,AMC, spreadsheet, filename, d
 
                 cellc = sheet.range('C'+str(i+1))
                 cellc.value = float(OCF)/100
-                cellc.number_format = '0,00%'
+                cellc.number_format = '0.00%'
 
                 celld = sheet.range('D'+str(i+1))
-                celld.value = float(AMC)/100
-                celld.number_format = '0,00%'
+                celld.value = float(one_year)/100
+                celld.number_format = '0.00%'
 
                 celle = sheet.range('E'+str(i+1))
                 celle.value = float(one_month)/100
-                celle.number_format = '0,00%'
-
-                cellf = sheet.range('F'+str(i+1))
-                cellf.value = float(one_year)/100
-                cellf.number_format = '0,00%'
+                celle.number_format = '0.00%'
 
         wb.save()
 
@@ -225,7 +225,7 @@ def write_to_sheet(one_year,one_month, assets, OCF,AMC, spreadsheet, filename, d
                     cell = sheet.range(
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(str(value).replace(',', '')) / 100
-                    cell.number_format = '0,00%'
+                    cell.number_format = '0.00%'
 
 
     except Exception as e:
@@ -276,8 +276,8 @@ if __name__ == '__main__':
     filenames, urls = filenames(excel_file)
 
     for filename, url in zip(filenames, urls):
-        one_year, one_month, assets, OCF,AMC,date = get_data(url)
-        write_to_sheet(one_year, one_month, assets, OCF,AMC, excel_file, filename, date)
+        one_year, one_month, assets, OCF, date = get_data(url)
+        write_to_sheet(one_year, one_month, assets, OCF, excel_file, filename, date)
 
             # write_to_sheet(one_year,one_month, assets, AMC, excel_file,pdf.split('\\')[-1].split('.')[0], date)
 
