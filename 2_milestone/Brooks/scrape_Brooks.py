@@ -52,14 +52,20 @@ def scrape_links(file_urls):
                 link = link_element['href']
                 # Check if the elements exist before accessing them
                 if title_element and link:
-                    if 'adviser' in link or "Adviser" in link or 'MPS-RIS-Adviser' in link or 'Low-Risk-Defensive-Income-passive' in link or 'High-Risk-Growth-Passive' in link:
-                        title = title_element
-                        cleaned_title = title.split(" | ")[0]
 
-                        # If href doesn't start with http or https, then prepend the base URL
-                        if not link.startswith(('http', 'https')):
-                            link = "https://www.brooksmacdonald.com" + link
+                    title = title_element
+                    cleaned_title = title.split(" | ")[0]
 
+                    # If href doesn't start with http or https, then prepend the base URL
+                    if not link.startswith(('http', 'https')):
+                        link = "https://www.brooksmacdonald.com" + link
+
+                    # Check if this title already exists in documents
+                    if cleaned_title in documents:
+                        # If this link has 'Adviser' or 'adviser' and the existing one does not, replace the existing link
+                        if ('Adviser' in link or 'adviser' in link) and not ('Adviser' in documents[cleaned_title] or 'adviser' in documents[cleaned_title]):
+                            documents[cleaned_title] = link
+                    else:
                         documents[cleaned_title] = link
 
         except requests.exceptions.RequestException as e:
@@ -117,7 +123,7 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    excel_file = '2_milestone\Brooks\Brooks Macdonald.xlsm'
+    excel_file = 'Brooks Macdonald.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)
