@@ -84,21 +84,14 @@ def scrape_links(file_urls):
 
                 # Извлекаем атрибут href
                 href = link_element[0].get_attribute('href')
-                
+                income_portfolio_element = driver.find_elements(By.CSS_SELECTOR, '.slide___3-Nqo.carousel__slide--visible .TextLinkstyled__Label-sc-1yqvx22-2')
+                income_portfolio_name = income_portfolio_element[0].text
+                print(income_portfolio_name)
+                # Получаем текст из этого div (название ссылки)
                 print(href)
-                page_source = driver.page_source
-                driver.quit()
-                
-                soup = BeautifulSoup(page_source, 'html.parser')
-                # Извлечение всех div с заданными классами
-                divs = soup.find_all('div', class_='sc-dkzDqf Col__StyledGridCol-sc-r49775-0 fuRzmx lfQrnV slide___3-Nqo slideHorizontal___1NzNV carousel__slide carousel__slide--visible')
 
-                # Из первого div извлечение текста из элемента с классом TextLinkstyled__Label-sc-1yqvx22-2 kTRHHt
-                if divs:
-                    label_element = divs[0].find('div', class_='TextLinkstyled__Label-sc-1yqvx22-2 kTRHHt')
-                    if label_element:
-                        text = label_element.text
-                        print(text)
+                # page_source = driver.page_source
+                driver.quit()
                 
                 # soup = BeautifulSoup(page_source, 'html.parser')
                 # divs = soup.findAll('div', {'class': 'RelatedCardstyled__LinkWrapper-sc-1wbco6m-5'})
