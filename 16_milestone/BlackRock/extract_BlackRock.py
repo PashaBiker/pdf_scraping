@@ -19,6 +19,7 @@ from bs4 import BeautifulSoup
 import json
 import requests
 from requests_html import HTMLSession
+# pip install requests-html
 
 excel_file = '16_milestone\BlackRock\BlackRock.xlsm'
 
@@ -94,7 +95,7 @@ def get_data(url):
     response.html.render(sleep=4, timeout=20.0)
 
     # Если вы хотите работать с содержимым ответа
-    html_content = response.html.html
+    # html_content = response.html.html
 
     # print(html_content)
 

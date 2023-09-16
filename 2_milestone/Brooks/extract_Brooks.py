@@ -95,7 +95,7 @@ def get_data(file):
 
         for i, line in enumerate(text):
             if 'Annual management charge' in line:
-                for offset in range(0, 4):  # check other lines
+                for offset in range(0, 2):  # check other lines
                     if i + offset < len(text):  # check if line is exist
                         founded_line = text[i+offset].strip()
                         if re.search(r'\d+\.\d+%', founded_line):  # if pattern found
