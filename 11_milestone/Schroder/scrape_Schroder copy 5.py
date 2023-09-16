@@ -29,36 +29,19 @@ def scrape_links(file_urls):
             driver = webdriver.Chrome()
 
             if '/fund/' in url:
-
                 driver.get(url)
-                # WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.XPATH, "//*[@id='root']/div/div/div[1]/div/div/div[12]/div/fx-document-group-panel/div/fx-documents-panel/div[2]/div/div[2]/div[2]/fx-document-item/div/a")))
-                WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/div/div/div[1]/div/div/div[12]')))
-                # Находим все элементы div с указанным классом
-                time.sleep(5)
-
-                element = driver.find_element(By.CSS_SELECTOR, '.fundexplorer-documentitem')
-                driver.execute_script("arguments[0].scrollIntoView();", element)
-                link_elements = driver.find_elements(By.CSS_SELECTOR, '.historical-document-item')
-
-                for link in link_elements:
-                    # Check if 'Factsheet' is in the link text
-                    if 'Factsheet' in link.text:
-                        link_href = link.get_attribute('href')
-                        print(link_href)
+                # time.sleep(5)
+                WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.XPATH, "//*[@id='root']/div/div/div[1]/div/div/div[12]/div/fx-document-group-panel/div/fx-documents-panel/div[2]/div/div[2]/div[2]/fx-document-item/div/a")))
                 
                 page_source = driver.page_source
                 soup = BeautifulSoup(page_source, 'html.parser')
 
                 driver.quit()
 
-                # div_tag_file_links_all = soup.findAll('div', {'class': 'col-block-items layout-layout3 fundexplorer-documentitem'})
-                # for div_tag_file_links in div_tag_file_links_all:
-                #     factsheet_element = div_tag_file_links.find('h2', text='Factsheet')
-                    # Извлекаем родительский элемент 'a' для этого заголовка и получаем значение href
-                    # factsheet_href = factsheet_element.find_parent('a')['href']
-                    # factsheet_anchor = div_tag_file_links.find('a', {'data-test-id': 'fundDashboardPageDocumentItem', 'class': 'document-item'}, string="Factsheet", recursive=True)
-                    # factsheet_link = factsheet_anchor['href']
-                # print(factsheet_href) 
+                div_tag_file_links = soup.find('div', {'class': 'fundexplorer-documentgrouppanel'})
+                factsheet_anchor = div_tag_file_links.find('a', {'data-test-id': 'fundDashboardPageDocumentItem', 'class': 'document-item'}, string="Factsheet", recursive=True)
+                factsheet_link = factsheet_anchor['href']
+                
                 
                 
                 div_tag = soup.find('div', {'class': 'fund-info valign-middle'})
@@ -68,13 +51,12 @@ def scrape_links(file_urls):
                 # Убираем " F Acc", если оно есть в тексте
                 fund_name_text = fund_name_div.replace(' F Acc', '')
 
-                fund_data[fund_name_text] = link_href
 
-                # print(fund_data)
+                fund_data[fund_name_text] = factsheet_link
 
-
-                # breakpoint()
-
+                print(fund_data)
+                breakpoint()
+                
             else:
                 driver.get(url)
                 WebDriverWait(driver, 100).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".RelatedCardstyled__LinkWrapper-sc-1wbco6m-5")))
@@ -158,6 +140,6 @@ if __name__ == '__main__':
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)
-    # write_to_sheet(pdf_link, excel_file)
+    write_to_sheet(pdf_link, excel_file)
 
     print('Done!')
