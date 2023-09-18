@@ -30,3 +30,4 @@ for pixel in im.getdata():
 
 print("Dated_Fixed_Income = ", Dated_Fixed_Income , "Equity_Income = " , Equity_Income , 
       "Alternatives = " , Alternatives , "Fixed_Income = " , Fixed_Income,"Equity_Growth =" , Equity_Growth)
+

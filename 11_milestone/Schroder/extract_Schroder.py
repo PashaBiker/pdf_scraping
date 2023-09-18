@@ -16,14 +16,15 @@ from queue import Queue
 from pdf2image import convert_from_path
 import pytesseract
 from pdfminer.high_level import extract_text
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-poppler_path=r'E:\git\Scraping\OCM\poppler-23.07.0\Library\bin'
 
-excel_file = '11_milestone\Schroder\Schroder Investment Solutions.xlsm'
-# excel_file = 'Schroder Investment Solutions.xlsm'
-pdf_folder = '11_milestone\Schroder\Schroder PDFs'
-# pdf_folder = 'Schroder PDFs'
+# YOUR PATH NEED TO BE ADDED
+# YOUR PATH NEED TO BE ADDED
+# YOUR PATH NEED TO BE ADDED
+pytesseract.pytesseract.tesseract_cmd = r'Tesseract-OCR\tesseract.exe'
+poppler_path=r'poppler-23.07.0\Library\bin'
 
+excel_file = 'Schroder Investment Solutions.xlsm'
+pdf_folder = 'Schroder PDFs'
 
 def download_worker(q, folder_name):
     headers = {
@@ -299,7 +300,7 @@ def get_data(file):
     total_percentage = sum([value for key, value in percentages.items() if key != 'Top 10 holdings Other' and key != 'Currency'])
     print(total_percentage)
 
-    return one_month, one_year, three_years, five_years, asset_values, AMC, OCF, date
+    return one_month, one_year, three_years, five_years, percentages, AMC, OCF, date
     # return asset_values, date
 
 
@@ -332,27 +333,27 @@ def write_to_sheet(one_month, one_year, three_years, five_years, assets, AMC, OC
 
                 cellc = sheet.range('C'+str(i+1))
                 cellc.value = float(OCF)/100
-                cellc.number_format = '0,00%'
+                cellc.number_format = '0.00%'
 
                 celld = sheet.range('D'+str(i+1))
                 celld.value = float(AMC)/100
-                celld.number_format = '0,00%'
+                celld.number_format = '0.00%'
 
                 celle = sheet.range('E'+str(i+1))
                 celle.value = float(one_month)/100
-                celle.number_format = '0,00%'
+                celle.number_format = '0.00%'
 
                 cellf = sheet.range('F'+str(i+1))
                 cellf.value = float(one_year)/100
-                cellf.number_format = '0,00%'
+                cellf.number_format = '0.00%'
 
                 cellg = sheet.range('G'+str(i+1))
                 cellg.value = float(three_years)/100
-                cellg.number_format = '0,00%'
+                cellg.number_format = '0.00%'
 
                 cellh = sheet.range('H'+str(i+1))
                 cellh.value = float(five_years)/100
-                cellh.number_format = '0,00%'
+                cellh.number_format = '0.00%'
 
         wb.save()
 
@@ -384,7 +385,7 @@ def write_to_sheet(one_month, one_year, three_years, five_years, assets, AMC, OC
                     cell = sheet.range(
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(str(value).replace(',', '')) / 100
-                    cell.number_format = '0,00%'
+                    cell.number_format = '0.00%'
 
     except Exception as e:
         print(f"An error occurred in file {filename}: {str(e)}")
