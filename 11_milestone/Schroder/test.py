@@ -1,44 +1,67 @@
-from bs4 import BeautifulSoup
-import xlwings as xw
-import traceback
-from bs4 import BeautifulSoup
-import time
-import requests
-import re
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-
-url = 'https://www.schroders.com/en-gb/uk/intermediary/investment-solutions/fund-centre/#/fund/SCHDR_F000016OTO/schroder-active-portfolio-3/-/profile/'
-
-
-fund_data = {}
-
-driver = webdriver.Chrome()
-driver.get(url)
-# time.sleep(5)
-WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.XPATH, "//*[@id='root']/div/div/div[1]/div/div/div[12]/div/fx-document-group-panel/div/fx-documents-panel/div[2]/div/div[2]/div[2]/fx-document-item/div/a")))
-page_source = driver.page_source
-soup = BeautifulSoup(page_source, 'html.parser')
-div_tag = soup.find('div', {'class': 'fund-info valign-middle'})
-
-# Из этого div извлекаем текст из тега <strong> внутри <h1>
-fund_name_div = div_tag.h1.strong.text
-
-# Убираем " F Acc", если оно есть в тексте
-fund_name_text = fund_name_div.replace(' F Acc', '')
-anchor = soup.findAll('a', {'data-test-id': 'fundDashboardPageDocumentItem'})
-# for fund_name in anchor:
-#     # fund_name_text = fund_name.h2.text
-#     fact_sheet_link = fund_name['href']
-#     fund_data[fund_name_text] = fact_sheet_link
-for link in anchor:
-    title = link.find('h2')
-    if title and title.text.strip() == 'Factsheet':
-        fact_sheet_link = link['href']
-        fund_data[fund_name_text] = fact_sheet_link
-print(fund_data)
-driver.quit()
+'Asset class Stock',
+'Asset class Cash',
+'Asset class Other',
+'Asset class Bond',
+'Region Developed country',
+'Region Emerging Market',
+'Region Asia - Emerging',
+'Region United States',
+'Region United Kingdom',
+'Region Asia - Developed',
+'Region Eurozone',
+'Region Japan',
+'Region Latin America',
+'Region Europe - ex euro',
+'Region Africa',
+'Region Europe - Emerging',
+'Region Other',
+'Sector Financial services',
+'Sector Technology',
+'Sector Industrials',
+'Sector Consumer cyclical',
+'Sector Communication Services',
+'Sector Consumer defensive',
+'Sector Healthcare',
+'Sector Basic materials',
+'Sector Cash & equivalents',
+'Sector Utilities',
+'Sector Energy',
+'Sector Real estate',
+'Sector Other',
+'Asset class Convertible',
+'Asset class Preferred',
+'Region Canada',
+'Region Australasia',
+'Sector  Government',
+'Sector Corporate',
+'Sector Securitized',
+'Sector Government',
+'Asset class Government bonds',
+'Asset class Liquid Assets',
+'Asset class Alternatives',
+'Asset class Aggregate Bonds',
+'Asset class Global Equity',
+'Asset class  UK Equity',
+'Asset class Investment Grade Bonds',
+'Asset class USA Equity',
+'Asset class Emerging Market Debt Bonds',
+'Asset class Property',
+'Asset class Absolute Return',
+'Asset class Europe Equity',
+'Asset class Japan Equity',
+'Asset class Other Equity',
+'Asset class Emerging Market Equity',
+'Region Global',
+'Region Europe ex-UK/Middle East',
+'Region Americas',
+'Region Liquid Assets',
+'Region Pacific ex-Japan',
+'Asset class UK Equity',
+'Asset class Emerging Market Debt  Bonds',
+'Region  Europe ex-UK/Middle East',
+'Asset class Asia Pacific ex Japan Equity',
+'Asset class Derivatives',
+'Asset class Commodities',
+'Asset class Hedge Funds',
+'Region Europe (excluding UK)',
+'Region Middle East',
