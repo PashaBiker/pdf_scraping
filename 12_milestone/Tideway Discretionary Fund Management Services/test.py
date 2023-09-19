@@ -14,8 +14,8 @@ import fitz
 
 text = ""
 
-file = "12_milestone/Tideway Discretionary Fund Management Services/222.pdf"
-# file = '12_milestone\Tideway Discretionary Fund Management Services\Multi-asset Moderate (DD2).pdf'
+# file = "12_milestone/Tideway Discretionary Fund Management Services/222.pdf"
+file = '12_milestone\Tideway Discretionary Fund Management Services\Tideway pdfs\Новая папка\Multi-asset Cautious (DD1).pdf'
 
 # doc = fitz.open(file)
 # for page in doc:
@@ -40,28 +40,39 @@ file = "12_milestone/Tideway Discretionary Fund Management Services/222.pdf"
 
 # text = text.split("\n")
 # print(text)
-import slate3k as slate
-from pdfminer.pdfparser import PDFParser
-from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfpage import PDFPage
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.converter import TextConverter
-from pdfminer.layout import LAParams
-from io import StringIO
+# import slate3k as slate
+# from pdfminer.pdfparser import PDFParser
+# from pdfminer.pdfdocument import PDFDocument
+# from pdfminer.pdfpage import PDFPage
+# from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+# from pdfminer.converter import TextConverter
+# from pdfminer.layout import LAParams
+# from io import StringIO
 
-def pdf_to_text(file_path):
-    output_string = StringIO()
-    with open(file_path, 'rb') as file:
-        parser = PDFParser(file)
-        doc = PDFDocument(parser)
-        rsrcmgr = PDFResourceManager()
-        device = TextConverter(rsrcmgr, output_string, laparams=LAParams())
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-        for page in PDFPage.create_pages(doc):
-            interpreter.process_page(page)
-        return output_string.getvalue()
+# def pdf_to_text(file_path):
+#     output_string = StringIO()
+#     with open(file_path, 'rb') as file:
+#         parser = PDFParser(file)
+#         doc = PDFDocument(parser)
+#         rsrcmgr = PDFResourceManager()
+#         device = TextConverter(rsrcmgr, output_string, laparams=LAParams())
+#         interpreter = PDFPageInterpreter(rsrcmgr, device)
+#         for page in PDFPage.create_pages(doc):
+#             interpreter.process_page(page)
+#         return output_string.getvalue()
 
-file_path = file
-extracted_text = pdf_to_text(file_path)
-text = extracted_text.split("\n")
-print(text)
+# file_path = file
+# extracted_text = pdf_to_text(file_path)
+# text = extracted_text.split("\n")
+# print(text)
+
+
+import fitz
+doc = fitz.open(file)
+page = doc[1].get_text('blocks')
+print(page)
+# lables = page
+# values = page
+
+# for l, v in zip(lables, values):
+#     print(' - '.join([l[4].replace('\n', ''), v[4]]))

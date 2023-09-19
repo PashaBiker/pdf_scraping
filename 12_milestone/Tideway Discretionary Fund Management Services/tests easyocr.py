@@ -31,8 +31,8 @@ def main(color, image_path):
     # extracted_text = pytesseract.image_to_string(result)
 
     # print(extracted_text)
-    reader = easyocr.Reader(['en'])
-    ocr_result = reader.readtext(result)
+    reader = easyocr.Reader(['en'], gpu=False,verbose=False)
+    ocr_result = reader.readtext(gray_image)
     
     extracted_text = ' '.join([item[1] for item in ocr_result])
     

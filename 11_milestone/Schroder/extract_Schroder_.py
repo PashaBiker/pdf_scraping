@@ -20,11 +20,11 @@ from pdfminer.high_level import extract_text
 # YOUR PATH NEED TO BE ADDED
 # YOUR PATH NEED TO BE ADDED
 # YOUR PATH NEED TO BE ADDED
-pytesseract.pytesseract.tesseract_cmd = r'Tesseract-OCR\tesseract.exe'
-poppler_path=r'poppler-23.07.0\Library\bin'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+poppler_path=r'D:\Git\pdf_scraping\11_milestone\Schroder\poppler-23.07.0\Library\bin'
 
-excel_file = '11_milestone\Schroder\Schroder Investment Solutions.xlsm'
-pdf_folder = '11_milestone\Schroder\Schroder PDFs'
+excel_file = 'Schroder Investment Solutions.xlsm'
+pdf_folder = 'Schroder PDFs'
 
 def download_worker(q, folder_name):
     headers = {
@@ -95,11 +95,10 @@ def download_pdfs(spreadsheet):
 def get_data(file):
 
     date = ''
-    AMC = 0.0
-    OCF = 0.0
+    AMC = None
+    OCF = None
     try:
         with pdfplumber.open(file) as pdf:
-            first_line_found = False
 
             # data image OCR
             images = convert_from_path(file, poppler_path = poppler_path)
@@ -135,7 +134,7 @@ def get_data(file):
 
             def extract_numbers(line):
                 numbers = re.findall(r"(-?\d+\.\d+|-)", line)
-                return [float(num) if num != '-' else 0.0 for num in numbers]
+                return [float(num) if num != '-' else None for num in numbers]
             
             # Поиск линии с "YTD" и "6 months"
             for i, line in enumerate(PDFPlumber_text):
@@ -329,31 +328,37 @@ def write_to_sheet(one_month, one_year, three_years, five_years, assets, AMC, OC
                 print('Writing Portfolio cost for', filename)
 
                 cellb = sheet.range('B'+str(i+1))
-                cellb.value = date
+                cellb.value = date if date is not None else None
 
                 cellc = sheet.range('C'+str(i+1))
-                cellc.value = float(OCF)/100
-                cellc.number_format = '0.00%'
+                cellc.value = float(OCF)/100 if OCF is not None else None
+                if cellc.value is not None:
+                    cellc.number_format = '0.00%'
 
                 celld = sheet.range('D'+str(i+1))
-                celld.value = float(AMC)/100
-                celld.number_format = '0.00%'
+                celld.value = float(AMC)/100 if AMC is not None else None
+                if celld.value is not None:
+                    celld.number_format = '0.00%'
 
                 celle = sheet.range('E'+str(i+1))
-                celle.value = float(one_month)/100
-                celle.number_format = '0.00%'
+                celle.value = float(one_month)/100 if one_month is not None else None
+                if celle.value is not None:
+                    celle.number_format = '0.00%'
 
                 cellf = sheet.range('F'+str(i+1))
-                cellf.value = float(one_year)/100
-                cellf.number_format = '0.00%'
+                cellf.value = float(one_year)/100 if one_year is not None else None
+                if cellf.value is not None:
+                    cellf.number_format = '0.00%'
 
                 cellg = sheet.range('G'+str(i+1))
-                cellg.value = float(three_years)/100
-                cellg.number_format = '0.00%'
+                cellg.value = float(three_years)/100 if three_years is not None else None
+                if cellg.value is not None:
+                    cellg.number_format = '0.00%'
 
                 cellh = sheet.range('H'+str(i+1))
-                cellh.value = float(five_years)/100
-                cellh.number_format = '0.00%'
+                cellh.value = float(five_years)/100 if five_years is not None else None
+                if cellh.value is not None:
+                    cellh.number_format = '0.00%'
 
         wb.save()
 
@@ -415,7 +420,7 @@ if __name__ == '__main__':
     # TODO UNCOMENT FIRST
     # TODO UNCOMENT FIRST
 
-    pdf_folder = download_pdfs(excel_file)
+    # pdf_folder = download_pdfs(excel_file)
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 
