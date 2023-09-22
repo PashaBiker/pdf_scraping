@@ -156,6 +156,28 @@ def get_percentage_list(pdf_path):
                     percentage_output.append(cleaned_word)
 
         return percentage_output
+    
+    def extract_text_from_pdf(pdf_path):
+        text_output = []
+
+        with pdfplumber.open(pdf_path) as pdf:
+            # Assuming you only want the second page's text
+            page = pdf.pages[1]
+
+            # Determine the new top boundary for cropping (50% of the page height)
+            top_boundary = page.height * 0.5
+
+            # Define the cropping box (bbox) as (x0, top, x1, bottom)
+            cropped_page = page.crop(
+                bbox=(0, top_boundary, page.width, page.height))
+
+            # Extract text from the cropped area
+            text = cropped_page.extract_text()
+            # Split the text by spaces and check each word
+            text_output = text.split('\n')
+            # text_output.append(text)
+
+        return text_output
 
     def validation(data_text, output_data):
         THRESHOLD = 80
@@ -193,6 +215,25 @@ def get_percentage_list(pdf_path):
 
         # Print and return the modified output_data
         return output_data
+    
+    def associate_labels_with_percentages(tags_found, percentages):
+        assets_labels = [
+            'Short-Dated Fixed Income (<5 years)',
+            'Equity Growth',
+            'Equity Income',
+            'Alternatives',
+            'Fixed Income (>5 years)'
+        ]
+
+        result_dict = {}
+
+        for label in assets_labels:
+            if label in tags_found:
+                result_dict[label] = percentages[tags_found.index(label)]
+            else:
+                result_dict[label] = '0'
+
+        return result_dict
 
     def image_pdf(pdf_path):
         pages = convert_from_path(
@@ -218,12 +259,25 @@ def get_percentage_list(pdf_path):
             'Equity_Income': (247, 148, 30),
             'Alternatives': (0, 174, 239),
             'Fixed_Income': (156, 203, 59)}
-
+    
+    assets_labels = ['Short-Dated',
+                         'Equity Growth',
+                         'Equity Income',
+                         'Alternatives',
+                         'Fixed Income', ]
+    
+    
     percentages = extract_percentage_from_pdf(pdf_path)
+    pdf_text = extract_text_from_pdf(pdf_path)
     percentages.reverse()
-    print(percentages, '- extracted % from pdf')
-    output_data = []
+    tags_found = [label for label in assets_labels if any(label in text for text in pdf_text)]
+    print(tags_found)
 
+    print(percentages, '- extracted % from pdf')
+    # print(pdf_text, '- extracted text from pdf')
+    output_data = []
+    final_dict = associate_labels_with_percentages(tags_found, percentages)
+    print(final_dict, '- final dict')
     image_path = image_pdf(pdf_path)
 
     for name, color in data.items():
@@ -361,7 +415,7 @@ if __name__ == "__main__":
     for pdf in pdfs:
         try:
             assets, OCF, date = get_data(pdf)
-            write_to_sheet(assets, OCF, excel_file,pdf.split('\\')[-1].split('.')[0], date)
+            # write_to_sheet(assets, OCF, excel_file,pdf.split('\\')[-1].split('.')[0], date)
 
         except Exception as e:
             print(f"An error occurred in file {pdf}: {str(e)}")
