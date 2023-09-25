@@ -272,8 +272,11 @@ def get_percentage_list(pdf_path):
     percentages.reverse()
     tags_found = [label for label in assets_labels if any(label in text for text in pdf_text)]
     print(tags_found)
-
+    output = [label if label in tags_found else '' for label in assets_labels]
     print(percentages, '- extracted % from pdf')
+    print(output, '- output names from pdf')
+    output.reverse()
+    print(output, '- reverse output names from pdf')
     # print(pdf_text, '- extracted text from pdf')
     output_data = []
     final_dict = associate_labels_with_percentages(tags_found, percentages)
@@ -290,7 +293,22 @@ def get_percentage_list(pdf_path):
     result = validation(percentages, flattened_list)
     result.reverse()
     print(result, '- validation list')
-    return result
+    non_empty_percentages = [p for p in result if p]
+
+    # Reorder based on tags_found
+    reordered_percentages = [non_empty_percentages.pop(0) if tag else '' for tag in output]
+
+    print(reordered_percentages, "- output % from output")
+    reordered_percentages.reverse()
+    print(reordered_percentages, "- reverse output % from output")
+
+    if len(reordered_percentages) == 2:
+        result = reordered_percentages
+    elif len(reordered_percentages) >2:
+        result = reordered_percentages[::-1]
+
+    print(reordered_percentages, 'WE RETURN IT')
+    return reordered_percentages
 
 
 def get_data(file):
@@ -415,7 +433,7 @@ if __name__ == "__main__":
     for pdf in pdfs:
         try:
             assets, OCF, date = get_data(pdf)
-            # write_to_sheet(assets, OCF, excel_file,pdf.split('\\')[-1].split('.')[0], date)
+            write_to_sheet(assets, OCF, excel_file,pdf.split('\\')[-1].split('.')[0], date)
 
         except Exception as e:
             print(f"An error occurred in file {pdf}: {str(e)}")
