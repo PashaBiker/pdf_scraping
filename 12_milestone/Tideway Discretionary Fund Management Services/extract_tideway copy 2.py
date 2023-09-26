@@ -15,14 +15,14 @@ import requests
 import traceback
 
 
-excel_file = '12_milestone\Tideway Discretionary Fund Management Services\Tideway Discretionary Fund Management Services.xlsm'
-pdf_folder = '12_milestone\Tideway Discretionary Fund Management Services\Tideway pdfs'
+excel_file = 'Tideway Discretionary Fund Management Services.xlsm'
+pdf_folder = 'Tideway pdfs'
 
 # poppler path
 poppler_path = r'C:\Program Files\poppler-23.07.0\Library\bin'
 
 # output image path
-output_image_path = "12_milestone\Tideway Discretionary Fund Management Services\cropped_page.png"
+output_image_path = "cropped_page.png"
 
 def download_pdfs(spreadsheet):
     print('Downloading PDFs...')
@@ -270,10 +270,19 @@ def get_percentage_list(pdf_path):
     percentages = extract_percentage_from_pdf(pdf_path)
     pdf_text = extract_text_from_pdf(pdf_path)
     percentages.reverse()
-    tags_found = [label for label in assets_labels if any(label in text for text in pdf_text)]
-    print(tags_found)
-
+    tags_found = []
+    for text in pdf_text:
+        for label in assets_labels:
+            if label in text and label not in tags_found:
+                tags_found.append(label)    
+    print(tags_found, 'tags found')
+    output = [label if label in tags_found else '' for label in assets_labels]
+    tags_dict = dict(zip(tags_found, percentages))
+    print(tags_dict, ' - tags_dict')
     print(percentages, '- extracted % from pdf')
+    print(output, '- output names from pdf')
+    output.reverse()
+    print(output, '- reverse output names from pdf')
     # print(pdf_text, '- extracted text from pdf')
     output_data = []
     final_dict = associate_labels_with_percentages(tags_found, percentages)
@@ -290,6 +299,29 @@ def get_percentage_list(pdf_path):
     result = validation(percentages, flattened_list)
     result.reverse()
     print(result, '- validation list')
+    non_empty_percentages = [p for p in result if p]
+
+    # Reorder based on tags_found
+    reordered_percentages = [non_empty_percentages.pop(0) if tag else '' for tag in output]
+
+    print(reordered_percentages, "- output % from output")
+    reordered_percentages.reverse()
+    print(reordered_percentages, "- reverse output % from output")
+
+    non_empty_count = sum(1 for p in reordered_percentages if p)
+
+    if non_empty_count == 2 and 'Short-Dated' in tags_found:
+        result = reordered_percentages[::-1]
+        print(result,'we ret result from if   ')
+    elif non_empty_count == 2:
+        result = [tags_dict.get(label, '') for label in assets_labels]
+        print(tags_dict, 'before result')
+    elif non_empty_count > 2:
+        result = reordered_percentages[::-1]
+
+
+    result = [p for p in result if p != '0%']
+    print(result, 'WE RETURN IT')
     return result
 
 
@@ -408,7 +440,7 @@ def column_letter_from_index(index):
 
 if __name__ == "__main__":
 
-    # pdf_folder = download_pdfs(excel_file)
+    pdf_folder = download_pdfs(excel_file)  
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 

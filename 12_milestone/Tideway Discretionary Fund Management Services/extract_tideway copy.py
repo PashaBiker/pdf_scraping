@@ -310,12 +310,17 @@ def get_percentage_list(pdf_path):
 
     non_empty_count = sum(1 for p in reordered_percentages if p)
 
-    if non_empty_count == 2:
-        print(tags_dict, 'before result')
+    if non_empty_count == 2 and 'Short-Dated' in tags_found:
+        result = reordered_percentages[::-1]
+        print(result,'we ret result from if   ')
+    elif non_empty_count == 2:
         result = [tags_dict.get(label, '') for label in assets_labels]
+        print(tags_dict, 'before result')
     elif non_empty_count > 2:
         result = reordered_percentages[::-1]
 
+
+    result = [p for p in result if p != '0%']
     print(result, 'WE RETURN IT')
     return result
 
