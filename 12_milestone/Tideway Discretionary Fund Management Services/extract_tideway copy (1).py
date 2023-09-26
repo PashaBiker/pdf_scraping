@@ -270,19 +270,10 @@ def get_percentage_list(pdf_path):
     percentages = extract_percentage_from_pdf(pdf_path)
     pdf_text = extract_text_from_pdf(pdf_path)
     percentages.reverse()
-    tags_found = []
-    for text in pdf_text:
-        for label in assets_labels:
-            if label in text and label not in tags_found:
-                tags_found.append(label)    
-    print(tags_found, 'tags found')
-    output = [label if label in tags_found else '' for label in assets_labels]
-    tags_dict = dict(zip(tags_found, percentages))
-    print(tags_dict, ' - tags_dict')
+    tags_found = [label for label in assets_labels if any(label in text for text in pdf_text)]
+    print(tags_found)
+
     print(percentages, '- extracted % from pdf')
-    print(output, '- output names from pdf')
-    output.reverse()
-    print(output, '- reverse output names from pdf')
     # print(pdf_text, '- extracted text from pdf')
     output_data = []
     final_dict = associate_labels_with_percentages(tags_found, percentages)
@@ -299,24 +290,6 @@ def get_percentage_list(pdf_path):
     result = validation(percentages, flattened_list)
     result.reverse()
     print(result, '- validation list')
-    non_empty_percentages = [p for p in result if p]
-
-    # Reorder based on tags_found
-    reordered_percentages = [non_empty_percentages.pop(0) if tag else '' for tag in output]
-
-    print(reordered_percentages, "- output % from output")
-    reordered_percentages.reverse()
-    print(reordered_percentages, "- reverse output % from output")
-
-    non_empty_count = sum(1 for p in reordered_percentages if p)
-
-    if non_empty_count == 2:
-        print(tags_dict, 'before result')
-        result = [tags_dict.get(label, '') for label in assets_labels]
-    elif non_empty_count > 2:
-        result = reordered_percentages[::-1]
-
-    print(result, 'WE RETURN IT')
     return result
 
 
