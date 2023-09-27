@@ -8,7 +8,7 @@ poppler_path = r'13_milestone\AJ\poppler-23.07.0\Library\bin'
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Adjust the path accordingly
 # Convert PDF to images
 pages = pdf2image.convert_from_path('13_milestone\AJ\MPS_Monthly_factsheets.pdf',
-                                    dpi=300, first_page=2, last_page=5, poppler_path=poppler_path)
+                                    dpi=300, first_page=2, poppler_path=poppler_path)
 
 # Save the images temporarily (useful for debugging and OCR)
 page_image_paths = []
@@ -25,7 +25,7 @@ for path in page_image_paths:
     lines = [line for line in text.split('\n') if line.strip() != '']
     page_texts.append(lines)
 
-print(page_texts)
+# print(page_texts)
 
 data = page_texts
 
@@ -54,48 +54,72 @@ for page in data:
             percentage = line.split()[-1]
             if "%" in percentage:
                 OCF.append(percentage.replace('%',''))
+                print('OCF appended')
 
 # 3. Extracting the 1Y, 2Y, 3Y, 4Y, and 5Y values
-values = []
+performance_values = []
 for i, page in enumerate(data):
     if i % 2 != 0:  # even page
-        for line in page:
-            parts = [part for part in line.split() if '.' in part]
-            if len(parts) > 3:  # checking if there are more than three values with dot
-                values.append(parts)
-                break
+        try:
+            float_values = [re.findall(r"[-]?\d+\.\d+", line) for line in page if len(re.findall(r"[-]?\d+\.\d+", line)) > 3]
+            if float_values:
+                # print(float_values)
+                performance_values.append(float_values[2])
+                print('performance_values appended')
+        except:
+            float_values = [re.findall(r"[-]?\d+\.\d+", line) for line in page if len(re.findall(r"[-]?\d+\.\d+", line)) >= 2]
+            if float_values:
+                # print(float_values)
+                performance_values.append(float_values[2])
+                print('performance_values appended only 2 was')
 
-# Assuming values will always be in order
-Y_values = {}
-Y_values['1Y'] = [float(val[0]) for val in values]
-Y_values['2Y'] = [float(val[1]) for val in values]
-Y_values['3Y'] = [float(val[2]) for val in values]
-Y_values['4Y'] = [float(val[3]) for val in values]
-Y_values['5Y'] = [float(val[4]) for val in values]
+if performance_values:
+    year_values = performance_values[0]
+    Y1, Y2, Y3, Y4, Y5 = year_values[0], year_values[1], year_values[2], year_values[3], year_values[4]
 
-# 4. Extracting the asset percentages based on the given asset labels
+
 asset_labels = [
-    'UK equity', 'North America equity', 'Europe ex-UK equity',
-    'Asia Pacific ex-Japan equity', 'Japan equity', 'Emerging Markets equity',
-    'UK government bonds ', 'UK corporate bonds', 'International bonds',
-    'Property', 'Cash equivalent', 'Cash'
+    'UK equity',
+    'North America equity',
+    'Europe ex-UK equity',
+    'Asia Pacific ex-Japan equity',
+    'Japan equity',
+    'Emerging Markets equity',
+    'UK government bonds',
+    'UK corporate bonds',
+    'International bonds',
+    'Property',
+    'Cash equivalent',
+    'Cash'
 ]
 
-asset_percentages = []
-pattern = re.compile(r'(\d+\.\d{2})%')  # Regular expression pattern to match percentages
+asset_data = []
 
 for page in data:
-    percentages_dict = {}
+    assets = {}
     for line in page:
         for label in asset_labels:
             if label in line:
-                match = pattern.search(line)
+                # percentage value is before the label
+                match = re.search(r"(\d+\.\d+)%", line)
                 if match:
-                    percent = match.group(1)
-                    percentages_dict[label] = float(percent)
-    asset_percentages.append(percentages_dict)
+                    value = match.group(1)
+                    assets[label] = float(value)
+                    
+                    # Remove the found label and percentage from the line
+                    line = line.replace(match.group(0) + " " + label, '')
+                    
+                else:
+                    # Optionally: handle the case where the pattern isn't found
+                    # (e.g., log a warning, set a default value, etc.)
+                    pass
+    if assets:
+        asset_data.append(assets)
+        print('asset_data appended')
+       
+
 
 print("Filename:", filename)
 print("OCF:", OCF)
-print("Y values:", Y_values)
-print("Asset percentages:", asset_percentages)
+print("Y values:", performance_values)
+print("Asset percentages:", asset_data)
