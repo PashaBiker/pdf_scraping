@@ -6,6 +6,7 @@ import requests
 import os
 import re
 import traceback
+# pip install PyMuPDF
 import fitz  # PyMuPDF
 
 
