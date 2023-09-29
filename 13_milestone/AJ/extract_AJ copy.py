@@ -1,186 +1,199 @@
 import glob
+import PyPDF2
 import pdfplumber
 import xlwings as xw
 import requests
 import os
 import re
 import traceback
+# pip install PyMuPDF
 import fitz  # PyMuPDF
+import re
+import pdf2image
+from PIL import Image
+import pytesseract
+import os
+
+excel_file = '13_milestone\AJ\AJ Bell.xlsm'
+pdf_folder = '13_milestone\AJ\AJ Bell PDFs'
 
 
-excel_file = 'AJ Bell.xlsm'
-pdf_folder = 'AJ Bell PDFs'
-
+poppler_path = r'13_milestone\AJ\poppler-23.07.0\Library\bin'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+directory = "13_milestone\\AJ\\pictures\\"
 
 def get_data(file):
+    print("[INFO] Converting PDF to images...")
+    pages = pdf2image.convert_from_path(file,
+                                        dpi=300, 
+                                        first_page=2,
+                                        # last_page=9,
+                                        poppler_path=poppler_path)
 
-    date = []
-    charge = []
-    one_year = []
-    one_month = []
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
-    
+    page_image_paths = []
+    for i, page in enumerate(pages, start=2):
+        path = directory + f"page_{i}.png"
+        page.save(path, 'PNG')
+        page_image_paths.append(path)
+        print(f"[INFO] Saved: {path}")
 
-    with fitz.open(file) as pdf:
-        text = ''
-        for page_number, page in enumerate(pdf):
-            if page_number == 0:  # Если это первая страница, пропустим ее
-                continue
-            text += page.get_text()
+    print("[INFO] Extracting text from images using OCR...")
+    page_texts = []
+    def clean_text(lines, even_page):
+        new_lines = []
+        for line in lines:
+            if even_page and '%' in line and 'OCF' not in line:
+                line = re.sub(r'\b\d+(\.\d+)?%\b', '', line).strip()
+            new_lines.append(line)
+        return new_lines
 
-        # Дополнительная обработка текста, если нужно
-        text = text.split('\n')
-        print(text)
-        # search_for_one_year = False
-        for i, line in enumerate(text):
+    # Process each image path
+    for index, path in enumerate(page_image_paths):
+        print(f"[INFO] Processing image: {path}")
+        text = pytesseract.image_to_string(Image.open(path))
+        lines = [line.replace('J it','Japan equity').replace('Pacifi -','Pacific ex-') for line in text.split('\n') if line.strip() != '']
+        # Check if page is even using its index
+        even_page = (index + 1) % 2 == 0
+        cleaned_lines = clean_text(lines, even_page)
+        page_texts.append(cleaned_lines)
 
-            if 'Annual Management Charge' in line:
-                charge_value = re.search(r'(\d+\.\d+)%', line)
-                charge.append(float(charge_value.group(1))/100)
-                date_match1 = re.search(r'Factsheet\s+(\d{2}/\d{2}/\d{4})', text[1])
-                if date_match1:
-                    date_value1 = date_match1.group(1)
-                    modified_date1 = date_value1.replace('/', '.')
-                    date.append(modified_date1)
-                else:
-                    # Если в первой строке даты нет, проверяем вторую строку
-                    date_match2 = re.search(r'(\d{2}/\d{2}/\d{4})', text[2])
-                    if date_match2:
-                        date_value2 = date_match2.group(1)
-                        modified_date2 = date_value2.replace('/', '.')
-                        date.append(modified_date2)
+    data = page_texts
 
-            numbers = re.findall(r'-?\d+\.\d+', line)
-            if len(numbers) >= 3:
-                # print(line)
-                if counter % 2 == 0:
-                    one_month.append(float(numbers[0])/100)
-                else:
-                    one_year.append(float(numbers[0])/100)
-                counter += 1
+    print(data)
 
-        # print(date)
-        # print(charge)
-        # print(one_year)
-        # print(one_month)
+    Date = []
 
-    text = ''
+    for i, page in enumerate(data):
+        if i % 2 == 0:
+            for line in page[:7]:  # Check first 7 lines
+                match = re.search(r'as at (.+)', line, re.IGNORECASE)
+                if match:
+                    date_str = match.group(1)
+                    Date.append(date_str)
 
-    with pdfplumber.open(file) as pdf:
-        for page in pdf.pages[1:-1]:
-            text += page.extract_text()
+    print("[INFO] Extracting filename...")
+    filename = [page[1] for i, page in enumerate(data) if i % 2 == 0]
 
-    text = text.split('\n')
-    # text = [line for line in text if line.strip() != '']
+    print("[INFO] Extracting OCF values...")
+    OCF = []
+    for page in data:
+        for line in page:
+            if "OCF" in line:
+                percentage = line.split()[-1]
+                if "%" in percentage:
+                    OCF.append(float(percentage.replace('%',''))/100)
+                    print('[INFO] OCF appended:', percentage)
 
-    # print(text)
-    prev_portfolio = ""
-    filenames = []
 
-    found_portfolio_holdings = False
-    groups = []
-    current_group = []
+    def clean_data(line):
+        return re.sub(r"\d+\.\d+%", " ", line)
 
-    for i, line in enumerate(text):
-        line = re.sub(r'\d+\.\d{1,2}%', '', line)
-        if i == 0:
-            continue
-        elif i == len(text) - 1:
-            continue
-        else:
+    cleaned_data = [[clean_data(line) for line in sublist] for sublist in data]
 
-            if 'All rights reserved. For Financial Advisers and their Clients using' in line:
-                print(line)
-                portfolio_match = re.search(r'Portfolios\.([\w\s–\-]+) ß', line)
-                if portfolio_match:
-                    current_portfolio = portfolio_match.group(1).strip().replace(" ß®", "").replace(" ß", "")  
-                    if current_portfolio != prev_portfolio and current_portfolio not in filenames:
-                        filenames.append(current_portfolio)
-                        prev_portfolio = current_portfolio
-                        
-            # Если находим строку 'Asset Allocation', начинаем добавление
-            if 'Asset Allocation' in line:
-                found_portfolio_holdings = True
-                continue  # Пропускаем текущую строку, чтобы она не добавлялась в current_group
+    print("[INFO] Extracting 1Y, 2Y, 3Y, 4Y, and 5Y values...")
+    def insert_dot(match):
+        year_set = {'2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'}
+        matched_str = match.group()
 
-            # Если находим строку 'Important Information', останавливаем добавление
-            elif 'Returns Disclosure' in line:
-                found_portfolio_holdings = False
+        if matched_str not in year_set:
+            return matched_str[:2] + '.' + matched_str[2:]
+        return matched_str
 
-                if current_group:
-                    groups.append(current_group)
-                    current_group = []
+    performance_values = []
+    for i, page in enumerate(cleaned_data):
+        if i % 2 != 0:
+            # Modify lines to insert dots in four-digit sequences
+            modified_page = [re.sub(r'\b(\d{4})\b', insert_dot, line) for line in page]
+            
+            # Find float values in the modified lines
+            float_values = [re.findall(r"[-]?\d+\.\d+", line) for line in modified_page if len(re.findall(r"[-]?\d+\.\d+", line)) >= 2]
+            print('[INFO] float_values =', float_values,)
+            
+            # Check if there are at least 3 lines with float values
+            if len(float_values) >= 3:
+                performance_values.append(float_values[2])
+                print('[INFO] Performance values appended:', float_values[2])
+            # If there's only 2 lines, use the second line
+            elif len(float_values) == 2:
+                performance_values.append(float_values[1])
+                print('[INFO] Performance values appended (only 2 was):', float_values[1])
+            else:
+                print('[ERROR] Unexpected number of float values found in page.')
 
-            # Если мы внутри интересующего нас блока, добавляем строки
-            elif found_portfolio_holdings:
-                current_group.append(line.strip())
-
-    # print(filenames)
-    print(groups)
-
-    categories = [
-        'Fixed Income',
-        'Equity',
-        'Cash & Cash Equivalents',
-        'GBP Corporate Bond',
-        'UK Equity',
-        'Global High Yield Bond',
-        'Other Bond',
-        'Global Emerging Markets Bond',
-        'Global Corporate Bond',
-        'UK Gilts',
-        'Global Equity',
-        'China Equity',
-        'Global Inflation-Linked Bond',
-        'North American Equity',
-        'Asia Dev ex Japan Equity',
-        'Japan Equity',
-        'Other Equity',
+    print("[INFO] Extracting asset percentages...")
+    asset_labels = [
+        'UK equity',
+        'North America equity',
+        'Europe ex-UK equity',
+        'Asia Pacific ex-Japan equity',
+        'Japan equity',
+        'Emerging Markets equity',
+        'UK government bonds',
+        'UK corporate bonds',
+        'International bonds',
         'Property',
-        'European Equity',
-        'Global Bond',
-        'Emerging Markets Equity',
-        'UK Inflation-Linked Bond',
-        ]
+        'Cash equivalent',
+        'Cash'
+    ]
+    
+    asset_data = []
 
-    sorted_categories = sorted(categories, key=len, reverse=True)
-    # categories_pattern = "|".join(sorted_categories)
+    for page in data:
+        assets = {}
+        for line in page:
+            temp_line = line  # A temporary variable to store the line for further processing
+            for label in sorted(asset_labels, key=lambda x: -len(x)):
+                # Use findall to get all matches for the label in the line
+                matches = re.findall(r"(\d+\.\d+)%\s*" + re.escape(label), temp_line)
+                for match in matches:
+                    value = match
+                    assets[label] = float(value)  # Replace the value for that asset
+                    # Remove the matched substring from temp_line
+                    temp_line = temp_line.replace(f"{value}% {label}", '', 1)
+        if assets:
+            asset_data.append(assets)
+            print('[INFO] Asset data appended for this page')   
 
-    result = []
-    grouped_assets = []
-
-    for group in groups:
-        asset_values = {}
-        lines_to_check = list(group)  # Создаем копию списка строк для проверки
-        for category in sorted_categories:
-            for line in lines_to_check:
-                if re.search(r'\b' + re.escape(category) + r'\b', line):
-                    value_match = re.search(r'(\d+\.\d{1,2})', line)
-                    if value_match:
-                        asset_values[category] = value_match.group(1)  # добавляем знак % к строке
-                    lines_to_check.remove(line)  # Удаляем строку из дальнейшего рассмотрения
-                    break
-        grouped_assets.append(asset_values)
-    # print(result)
+    # print("[RESULTS] Filename:", filename)
+    # print("[RESULTS] OCF:", OCF)
+    # print("[RESULTS] Y values:", performance_values)
+    # print("[RESULTS] Asset percentages:", asset_data)
 
     result2 = {}
+    for i, name in enumerate(filename):  # assuming filename is a list of filenames
+        Y1, Y2, Y3, Y4, Y5 = None, None, None, None, None
 
-    for i, filename in enumerate(filenames):
-        result2[filename] = {
-            'Date': date[i],
-            '1Y': one_year[i],
-            '1Month': one_month[i],
-            'Annual Management Charge': charge[i],
-            'Assets': grouped_assets[i]
+        year_values = performance_values[i]
+        Y1 = float(year_values[0])/100 if len(year_values) > 0 else Y1
+        Y2 = float(year_values[1])/100 if len(year_values) > 1 else Y2
+        Y3 = float(year_values[2])/100 if len(year_values) > 2 else Y3
+        Y4 = float(year_values[3])/100 if len(year_values) > 3 else Y4
+        Y5 = float(year_values[4])/100 if len(year_values) > 4 else Y5    
+
+        result2[name] = {
+            'Date': Date[i],
+            'Ongoing charges figure (OCF)': OCF[i],
+            '1 Year': Y1,
+            '2 Year': Y2,
+            '3 Year': Y3,
+            '4 Year': Y4,
+            '5 Year': Y5,
+            'Assets': asset_data[i]
         }
         print(
-            'date', date[i], '\n',
-            '12 months', one_year[i], "\n",
-            '1 month', one_month[i], "\n",
-            'Annual Management Charge', charge[i], "\n",
-            'Assets', grouped_assets[i], "\n",
+            'Date', Date[i],'\n',
+            'Filename', name, "\n",
+            'OCF', OCF[i], "\n",
+            '1Y', Y1, "\n",
+            '2Y', Y2, "\n",
+            '3Y', Y3, "\n",
+            '4Y', Y4, "\n",
+            '5Y', Y5, "\n",
+            'Assets', asset_data[i], "\n",
         )
-
     return result2
 
 
@@ -304,7 +317,7 @@ def write_to_sheet(data, excel_file):
                 column_index = column_headings.index(asset) + 1
                 cell = sheet.range(
                     f'{column_letter_from_index(column_index)}{row}')
-                cell.value = float(value.replace('%', '')) / 100
+                cell.value = float(value) / 100
                 cell.number_format = '0,00%'
 
     except Exception as e:
@@ -337,7 +350,7 @@ if __name__ == '__main__':
 
         try:
             data = get_data(file)
-            # write_to_sheet(data, excel_file)
+            write_to_sheet(data, excel_file)
 
         except Exception as e:
             print(f"Error while processing {file}: {str(e)}")
