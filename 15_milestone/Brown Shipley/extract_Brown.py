@@ -88,11 +88,11 @@ def get_data(file):
                 if 'Factsheet to ' in line:
                     date = line.replace('Factsheet to ', '')
                 
-                if 'Ongoing Charges Figure' in line:
+                if 'Fund Name and Class' in line:
                     numbers_in_line = re.findall(r'[-+]?\d+\.\d+', text[i+1])
                     if len(numbers_in_line) >= 4:
                         OCF = numbers_in_line[2]
-                        AMC = numbers_in_line[3]
+                        AMC = numbers_in_line[4]                            
 
                 numbers = re.findall(r'[-+]?\d+\.\d+%', line)
                 if len(numbers) >= 4 and not one_year_found:

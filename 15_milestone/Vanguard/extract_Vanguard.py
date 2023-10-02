@@ -32,10 +32,14 @@ def get_data(url):
     element_present = EC.presence_of_element_located((By.XPATH, '//*[@id="main-content"]/ukd-fund-detail/div[2]/ukd-price-performance/ukd-past-performance/ukd-link-tabs/div/div/div/nav/button[6]'))
     element = WebDriverWait(driver, 30).until(element_present)
 
+
     button = driver.find_element(By.XPATH, '//*[@id="main-content"]/ukd-fund-detail/div[2]/ukd-price-performance/ukd-past-performance/ukd-link-tabs/div/div/div/nav/button[6]')
+    button_cookies = driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
     scroll_to_past_perf = driver.find_element(By.XPATH, '//*[@id="main-content"]/ukd-fund-detail/div[2]/ukd-price-performance/ukd-past-performance/h3')
     driver.execute_script("arguments[0].scrollIntoView();", scroll_to_past_perf)
     time.sleep(2)  # Дайте немного времени после скролла перед тем, как кликнуть
+    button_cookies.click()
+    time.sleep(1)  # Дайте немного времени после скролла перед тем, как кликнуть
     button.click()
     # Extract and print the table content
     table = driver.find_element(By.CLASS_NAME, 'responsive-scrollable-table')

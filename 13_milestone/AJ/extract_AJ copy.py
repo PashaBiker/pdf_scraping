@@ -26,8 +26,8 @@ def get_data(file):
     print("[INFO] Converting PDF to images...")
     pages = pdf2image.convert_from_path(file,
                                         dpi=300, 
-                                        first_page=2,
-                                        # last_page=9,
+                                        first_page=10,
+                                        last_page=11,
                                         poppler_path=poppler_path)
 
     if not os.path.exists(directory):
@@ -75,7 +75,13 @@ def get_data(file):
                     Date.append(date_str)
 
     print("[INFO] Extracting filename...")
-    filename = [page[1] for i, page in enumerate(data) if i % 2 == 0]
+    def remove_after_number(s):
+        match = re.search(r"\d+", s)
+        if match:
+            return s[:match.end()]
+        return s
+
+    filename = [remove_after_number(page[1]) for i, page in enumerate(data) if i % 2 == 0]
 
     print("[INFO] Extracting OCF values...")
     OCF = []

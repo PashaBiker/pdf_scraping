@@ -69,7 +69,13 @@ def get_data(file):
                     Date.append(date_str)
 
     print("[INFO] Extracting filename...")
-    filename = [page[1] for i, page in enumerate(data) if i % 2 == 0]
+    def remove_after_number(s):
+        match = re.search(r"\d+", s)
+        if match:
+            return s[:match.end()]
+        return s
+
+    filename = [remove_after_number(page[1]) for i, page in enumerate(data) if i % 2 == 0]
 
     print("[INFO] Extracting OCF values...")
     OCF = []
