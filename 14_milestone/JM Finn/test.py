@@ -1,34 +1,16 @@
-import cv2
-from matplotlib import pyplot as plt
-import numpy as np
-# pip install imutils
-import imutils
-import easyocr
+data = [{'coordinates': (0, 0, 922, 832), 'text': '0.'}, {'coordinates': (0, 0, 922, 832), 'text': '3.0'}, {'coordinates': (0, 0, 922, 832), 'text': '4.3'}, {'coordinates': (0, 0, 922, 832), 'text': '9.8'}, {'coordinates': (0, 0, 922, 832), 'text': '2.8'}, {'coordinates': (0, 0, 922, 832), 'text': '.'}, {'coordinates': (0, 0, 922, 832), 'text': '21.5'}, {'coordinates': (0, 0, 922, 832), 'text': '1.5'}, {'coordinates': (0, 0, 922, 832), 'text': '9.2'}, {'coordinates': (0, 0, 922, 832), 'text': '2.5'}, {'coordinates': (0, 0, 922, 832), 'text': '5.7'}, {'coordinates': (0, 0, 922, 832), 'text': '.'}, {'coordinates': (0, 0, 922, 832), 'text': '7.4'}, {'coordinates': (0, 0, 922, 832), 'text': '31.8'}, {'coordinates': (150, 27, 891, 768), 'text': '0.4'}, {'coordinates': (150, 27, 891, 768), 'text': '3.0'}, {'coordinates': (150, 27, 891, 768), 'text': '4.3'}, {'coordinates': (150, 27, 891, 768), 'text': '9.8'}, {'coordinates': (150, 27, 891, 768), 'text': '2.8'}, {'coordinates': (150, 27, 891, 768), 'text': '21.5'}, {
+    'coordinates': (150, 27, 891, 768), 'text': '1.5'}, {'coordinates': (150, 27, 891, 768), 'text': '9.2'}, {'coordinates': (150, 27, 891, 768), 'text': '2.5'}, {'coordinates': (150, 27, 891, 768), 'text': '5.7'}, {'coordinates': (150, 27, 891, 768), 'text': '.'}, {'coordinates': (150, 27, 891, 768), 'text': '7.4'}, {'coordinates': (150, 27, 891, 768), 'text': '31.8'}, {'coordinates': (610, 680, 670, 705), 'text': '31.8'}, {'coordinates': (265, 602, 304, 627), 'text': '7.4'}, {'coordinates': (192, 470, 233, 495), 'text': '5.7'}, {'coordinates': (813, 436, 859, 461), 'text': '2.5'}, {'coordinates': (191, 317, 236, 342), 'text': '9.2'}, {'coordinates': (225, 230, 264, 255), 'text': '1.5'}, {'coordinates': (756, 209, 816, 234), 'text': '21.5'}, {'coordinates': (245, 187, 291, 212), 'text': '2.8'}, {'coordinates': (343, 110, 389, 135), 'text': '9.8'}, {'coordinates': (543, 86, 590, 111), 'text': '4.3'}, {'coordinates': (469, 86, 514, 111), 'text': '3.0'}, {'coordinates': (504, 42, 550, 67), 'text': '0.4'}]
+from collections import Counter
 
+# Count occurrences of each coordinate
+coord_counts = Counter(entry['coordinates'] for entry in data)
 
-img = cv2.imread('14_milestone\JM Finn\Image.ExportImages.5_.png')
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-plt.imshow(cv2.cvtColor(gray, cv2.COLOR_BGR2RGB))
-# plt.show()
+# Find coordinates that appear more than once
+filtered_coordinates = [coord for coord, count in coord_counts.items() if count > 1]
 
-bfilter = cv2.bilateralFilter(gray, 11, 17, 17) #Noise reduction
-edged = cv2.Canny(bfilter, 30, 200) #Edge detection
-plt.imshow(cv2.cvtColor(edged, cv2.COLOR_BGR2RGB))
-# plt.show()
+# Use list comprehension to create a new list excluding unwanted coordinates
+filtered_data = [entry for entry in data if entry['coordinates'] not in filtered_coordinates]
 
-keypoints = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-contours = imutils.grab_contours(keypoints)
-contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
-
-location = None
-for contour in contours:
-    approx = cv2.approxPolyDP(contour, 10, True)
-    if len(approx) == 4:
-        location = approx
-        break
-
-mask = np.zeros(gray.shape, np.uint8)
-new_image = cv2.drawContours(mask, [location], 0,255, -1)
-new_image = cv2.bitwise_and(img, img, mask=mask)
-plt.imshow(cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB))
-plt.show()
+# Display the filtered data
+for entry in filtered_data:
+    print(entry)

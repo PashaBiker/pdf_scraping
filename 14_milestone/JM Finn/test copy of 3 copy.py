@@ -9,6 +9,7 @@ import easyocr
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import cv2
+from collections import Counter
 
 img = cv2.imread('14_milestone\JM Finn\Image.ExportImages.5_.png')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -147,26 +148,44 @@ def apply_ocr_to_grouped_contours(image, contours, groups):
 output_image, group_info = apply_ocr_to_grouped_contours(img, contours, groups)
 
 output_image_rgb = cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB)
+print(group_info)
 for info in group_info:
     print(f"Coordinates: {info['coordinates']}, Text: {info['text']}")
+    print(f"{info['coordinates']},{info['text']}")
+    print(info)
+
+# Count occurrences of each coordinate
+coord_counts = Counter(entry['coordinates'] for entry in group_info)
+
+# Find coordinates that appear more than once
+filtered_coordinates = [coord for coord, count in coord_counts.items() if count > 1]
+
+# Use list comprehension to create a new list excluding unwanted coordinates
+filtered_data = [entry for entry in group_info if entry['coordinates'] not in filtered_coordinates]
+
+# Display the filtered data
+for entry in filtered_data:
+    print(entry)
+
 plt.figure(figsize=(15, 15))
 plt.imshow(output_image_rgb)
 plt.axis('off')
 plt.show()
 
 # Extract the texts and their order from group_info
-texts = [info['text'] for info in group_info]
+texts = [info['text'] for info in filtered_data]
 sorted_texts = sorted(texts)
 
 fig, ax = plt.subplots(figsize=(15, 15))
-output_image_rgb = cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB)
+# output_image_rgb = cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB)
+output_image_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 ax.imshow(output_image_rgb)
 
 # Assuming divisor is defined elsewhere in the code, or you can replace it with the appropriate value
 divisor = 1  # Modify if necessary
 
 # Plot each rectangle, its corresponding text, and its order in the sorted list
-for index, info in enumerate(group_info):
+for index, info in enumerate(filtered_data):
     x1, y1, x2, y2 = info['coordinates']
     rect = patches.Rectangle((x1/divisor, y1/divisor), (x2-x1)/divisor, (y2-y1)/divisor, linewidth=1, edgecolor='r', facecolor='none')
     ax.add_patch(rect)
