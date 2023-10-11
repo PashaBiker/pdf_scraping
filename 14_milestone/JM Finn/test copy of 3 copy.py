@@ -11,7 +11,9 @@ import matplotlib.patches as patches
 import cv2
 from collections import Counter
 
-img = cv2.imread('14_milestone\JM Finn\Image.ExportImages.5_.png')
+# img = cv2.imread('14_milestone\JM Finn\JM Finn Images\JM Finn Cropped Images\CSI Growth Portfolio.pdf_page1_img4.png')
+# img = cv2.imread('14_milestone\JM Finn\JM Finn Images\JM Finn Cropped Images\CSI Income and Growth Portfolio.pdf_page1_img4.png')
+img = cv2.imread('14_milestone\JM Finn\JM Finn Images\JM Finn Cropped Images\CSI Income Portfolio.pdf_page1_img1.png')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # Display the grayscale image
@@ -76,7 +78,7 @@ def group_contours(contours, threshold):
     return groups
 
 # Group contours
-threshold_distance = 50  # This is a value you might need to tweak based on your specific image and requirements
+threshold_distance = 45  # This is a value you might need to tweak based on your specific image and requirements
 groups = group_contours(contours, threshold_distance)
 
 # Visualizing the grouped contours
@@ -87,9 +89,9 @@ for group in groups:
         cv2.drawContours(output, [contours[idx]], -1, color, 3)
 
 plt.figure(figsize=(10, 10))
-# plt.imshow(cv2.cvtColor(output, cv2.COLOR_BGR2RGB))
-# plt.axis('off')
-# plt.show()
+plt.imshow(cv2.cvtColor(output, cv2.COLOR_BGR2RGB))
+plt.axis('off')
+plt.show()
 
 def apply_ocr_to_grouped_contours(image, contours, groups):
     output = image.copy()
@@ -122,8 +124,35 @@ def apply_ocr_to_grouped_contours(image, contours, groups):
         # Draw bounding rectangle and place OCR result on the image
         for entry in result:
             text = entry[1]
-            # Remove non-digit characters except for the dot
-            cleaned_text = ''.join([char for char in text if char.isdigit() or char == '.'])
+            print(text, '- non cleaned text')
+            
+            cleaned = []
+            for i, char in enumerate(text):
+                if char.isdigit():
+                    cleaned.append(char)
+                elif char == '.':
+                    # Check if the dot has digits on either side
+                    if (i-1 >= 0 and text[i-1].isdigit()) and (i+1 < len(text) and text[i+1].isdigit()):
+                        cleaned.append(char)
+
+            cleaned_text = ''.join(cleaned)
+
+            # Truncate the cleaned text if it exceeds 4 characters
+            if len(cleaned_text) > 4:
+                if '.' in cleaned_text:
+                    # Find the position of the dot and keep one digit after it
+                    dot_index = cleaned_text.index('.')
+                    cleaned_text = cleaned_text[:dot_index+2]
+                else:
+                    cleaned_text = cleaned_text[:4]
+                    
+            print(cleaned_text, '- cleaned text')
+        # for entry in result:
+        #     text = entry[1]
+        #     # Remove non-digit characters except for the dot
+        #     print(text, '- non cleaned text')
+        #     cleaned_text = ''.join([char for char in text if char.isdigit() or char == '.'])
+        #     print(cleaned_text, '- cleaned text')
 
             # Check if the cleaned text consists of 2 digits and insert dot between them
             if cleaned_text.isdigit() and len(cleaned_text) == 2:
@@ -170,33 +199,4 @@ for entry in filtered_data:
 plt.figure(figsize=(15, 15))
 plt.imshow(output_image_rgb)
 plt.axis('off')
-plt.show()
-
-# Extract the texts and their order from group_info
-texts = [info['text'] for info in filtered_data]
-sorted_texts = sorted(texts)
-
-fig, ax = plt.subplots(figsize=(15, 15))
-# output_image_rgb = cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB)
-output_image_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-ax.imshow(output_image_rgb)
-
-# Assuming divisor is defined elsewhere in the code, or you can replace it with the appropriate value
-divisor = 1  # Modify if necessary
-
-# Plot each rectangle, its corresponding text, and its order in the sorted list
-for index, info in enumerate(filtered_data):
-    x1, y1, x2, y2 = info['coordinates']
-    rect = patches.Rectangle((x1/divisor, y1/divisor), (x2-x1)/divisor, (y2-y1)/divisor, linewidth=1, edgecolor='r', facecolor='none')
-    ax.add_patch(rect)
-    center_x, center_y = (x1 + x2)/(2*divisor), (y1 + y2)/(2*divisor)
-    text = info['text']
-    ax.text(center_x, center_y, text, ha='center', va='center', fontsize=10)
-    order = sorted_texts.index(text) + 1
-    ax.text(center_x, center_y-0.05, f"({order})", ha='center', va='center', fontsize=8, color='blue')
-
-# Additional display settings
-ax.set_aspect('equal')
-ax.invert_yaxis()  # To make the (0,0) start from the top left corner
-ax.axis('off')  # Turn off axis
 plt.show()
