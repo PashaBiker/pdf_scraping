@@ -11,10 +11,13 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import cv2
 from collections import Counter
+from PIL import Image
 
-# img = cv2.imread('14_milestone\JM Finn\JM Finn Images\JM Finn Cropped Images\crop1_CSI Growth Portfolio.pdf_page1_img4.png')
-# img = cv2.imread('14_milestone\JM Finn\JM Finn Images\JM Finn Cropped Images\crop1_CSI Income and Growth Portfolio.pdf_page1_img4.png')
-img_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped assets\crop1_CSI Income Portfolio.pdf_page1_img1.png'
+# img_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped Images\crop1_CSI Growth Portfolio.pdf_page1_img4.png'
+img_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped assets\crop1_CSI Income and Growth Portfolio.pdf_page1_img4.png'
+# img_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped assets\crop1_CSI Income Portfolio.pdf_page1_img1.png'
+# img_key_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped keys\crop2_CSI Income Portfolio.pdf_page1_img1.png'
+img_key_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped keys\crop2_CSI Income and Growth Portfolio.pdf_page1_img4.png'
 img = cv2.imread(img_path)
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -90,10 +93,10 @@ for group in groups:
     for idx in group:
         cv2.drawContours(output, [contours[idx]], -1, color, 3)
 
-plt.figure(figsize=(10, 10))
-plt.imshow(cv2.cvtColor(output, cv2.COLOR_BGR2RGB))
-plt.axis('off')
-plt.show()
+# plt.figure(figsize=(10, 10))
+# plt.imshow(cv2.cvtColor(output, cv2.COLOR_BGR2RGB))
+# plt.axis('off')
+# plt.show()
 
 def apply_ocr_to_grouped_contours(image, contours, groups):
     output = image.copy()
@@ -120,7 +123,7 @@ def apply_ocr_to_grouped_contours(image, contours, groups):
         # Apply OCR on the scaled ROI
         # text = pytesseract.image_to_string(scaled_roi, config='--psm 6')
         # text = text.strip()
-        reader = easyocr.Reader(['en'])
+        reader = easyocr.Reader(['en'], gpu=False, verbose=False)
         result = reader.readtext(scaled_roi)
         text = result
         # Draw bounding rectangle and place OCR result on the image
@@ -249,3 +252,97 @@ plt.xlabel('X')
 plt.ylabel('Y')
 plt.grid(True)
 plt.show()
+
+# we get sorted data == coordinates and text, we take only text:
+# we get sorted data == coordinates and text, we take only text:
+# we get sorted data == coordinates and text, we take only text:
+# we get sorted data == coordinates and text, we take only text:
+# we get sorted data == coordinates and text, we take only text:
+
+
+
+# 
+# 
+# KEYS LIST
+# KEYS LIST
+# KEYS LIST
+# KEYS LIST
+# 
+# 
+# 
+
+# Open the image with PIL
+img_pil = Image.open(img_key_path)
+
+# Convert the PIL Image object to a numpy array
+img_np = np.array(img_pil)
+
+# Create the EasyOCR reader
+reader = easyocr.Reader(['en'], gpu=False, verbose=False)
+
+assets = [
+'Corporate Direct',
+'Bond Funds',
+'Sovereign',
+'Cap >',
+'Cap <',
+'North America',
+'Europe',
+'Japan',
+'Asia/China',
+'Global',
+'Property',
+'Alternatives',
+'Cash']
+
+keys = []
+
+# Read the text from the image numpy array
+result = reader.readtext(img_np)
+for entry in result:
+    text = entry[1].replace('/','')
+    keys.append(text)
+
+def map_to_assets(input_list):
+    # Initially set the result to an empty list
+    result = []
+    
+    # Map items from input_list to corresponding assets
+    for item in assets:
+        # For 'Cap >' and 'Cap <', always add them regardless of their presence in input_list
+        if item in ['Cap >', 'Cap <','Asia/China']:
+            result.append(item)
+        else:
+            result.append(item if item in input_list else "")
+    
+    return result
+
+key_list = map_to_assets(keys)
+
+print(key_list)
+
+index_north_america = keys.index('North America')
+
+# Split the list at 'North America' and rearrange
+new_keys = key_list[index_north_america:] + key_list[:index_north_america]
+
+# 
+# 
+# KEYS LIST
+# KEYS LIST
+# KEYS LIST
+# KEYS LIST
+# 
+# 
+# 
+
+
+unsorted_output = {}
+for i, entry in enumerate(sorted_data):
+    key = new_keys[i]
+    if key:
+        unsorted_output[key] = entry['text']
+
+sorted_output = {asset: unsorted_output[asset] for asset in assets if asset in unsorted_output}
+
+print(sorted_output)

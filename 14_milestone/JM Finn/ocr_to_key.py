@@ -1,19 +1,15 @@
-import pytesseract
 from PIL import Image
-
-# Open the image file
-img = Image.open("14_milestone\JM Finn\JM Finn Images\JM Finn Cropped keys\crop2_CSI Income Portfolio.pdf_page1_img1.png")
-# Use Tesseract to do OCR on the image
-text = pytesseract.image_to_string(img)
-
-print(text.split('/n'))
-
 import easyocr
 import numpy as np
-from PIL import Image
+
+# Open the image file
+
+img = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped keys\crop2_CSI Income Portfolio.pdf_page1_img1.png'
+# img = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped keys\crop2_CSI Income and Growth Portfolio.pdf_page1_img4.png'
+# img = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped keys\crop2_CSI Growth Portfolio.pdf_page1_img4.png'
 
 # Open the image with PIL
-img_pil = Image.open("14_milestone\JM Finn\JM Finn Images\JM Finn Cropped keys\crop2_CSI Income Portfolio.pdf_page1_img1.png")
+img_pil = Image.open(img)
 
 # Convert the PIL Image object to a numpy array
 img_np = np.array(img_pil)
@@ -21,8 +17,45 @@ img_np = np.array(img_pil)
 # Create the EasyOCR reader
 reader = easyocr.Reader(['en'])
 
+assets = [
+'Corporate Direct',
+'Bond Funds',
+'Sovereign',
+'Cap >',
+'Cap <',
+'North America',
+'Europe',
+'Japan',
+'Asia/China',
+'Global',
+'Property',
+'Alternatives',
+'Cash']
+
+keys = []
+
 # Read the text from the image numpy array
 result = reader.readtext(img_np)
 for entry in result:
-    text = entry[1]
-    print(text)
+    text = entry[1].replace('/','')
+    keys.append(text)
+
+print(keys)
+
+def map_to_assets(input_list):
+    # Initially set the result to an empty list
+    result = []
+    
+    # Map items from input_list to corresponding assets
+    for item in assets:
+        # For 'Cap >' and 'Cap <', always add them regardless of their presence in input_list
+        if item in ['Cap >', 'Cap <','Asia/China']:
+            result.append(item)
+        else:
+            result.append(item if item in input_list else "")
+    
+    return result
+
+output = map_to_assets(keys)
+
+print(output)
