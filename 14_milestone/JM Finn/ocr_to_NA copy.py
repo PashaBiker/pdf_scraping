@@ -16,7 +16,9 @@ import traceback
 
 
 # def main():
-def main(color, image_path):
+def get_NA_num(image_path):
+    color = (174, 92, 55)
+
     image = cv2.imread(image_path)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     
@@ -77,6 +79,5 @@ def main(color, image_path):
 
 
 if __name__ == "__main__":
-    color = (174, 92, 55)
     image_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped assets\crop1_CSI Income Portfolio.pdf_page1_img1.png'
-    main(color, image_path)
+    get_NA_num(image_path)

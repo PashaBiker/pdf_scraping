@@ -260,16 +260,135 @@ plt.show()
 # we get sorted data == coordinates and text, we take only text:
 
 
+for info in sorted_data:
+    print(f"Coordinates: {info['coordinates']}, Text: {info['text']}")
+    print(f"{info['coordinates']},{info['text']}")
+    print(info)
 
-# 
-# 
-# KEYS LIST
-# KEYS LIST
-# KEYS LIST
-# KEYS LIST
-# 
-# 
-# 
+# Count occurrences of each coordinate
+coord_counts = Counter(entry['coordinates'] for entry in sorted_data)
+
+# Find coordinates that appear more than once
+filtered_coordinates = [coord for coord, count in coord_counts.items() if count > 1]
+
+# Use list comprehension to create a new list excluding unwanted coordinates
+filtered_data = [entry for entry in sorted_data if entry['coordinates'] not in filtered_coordinates]
+
+print(filtered_data)
+# Display the filtered data
+for entry in filtered_data:
+    print(entry)
+
+
+coords = [((x1+x2)/2, (y1+y2)/2) for x1, y1, x2, y2 in [item['coordinates'] for item in filtered_data]]
+centroid = np.mean(coords, axis=0)
+
+def compute_angle(point, centroid):
+    # Calculate the angle using the arctan2 function
+    angle = math.atan2(point[1] - centroid[1], point[0] - centroid[0])
+    
+    # Convert the angle from radians to degrees
+    angle = math.degrees(angle)
+    
+    # Adjust the angle to start from the vertical line (top) and go clockwise
+    adjusted_angle = (angle - 90) % 360
+    return adjusted_angle
+
+# Compute angles for each coordinate
+angles = [compute_angle(coord, centroid) for coord in coords]
+
+# Sort the data based on angles
+sorted_data = [filtered_data[i] for i in np.argsort(angles)]
+print(sorted_data)
+# Extracting coordinates and texts from the sorted data
+sorted_coords = [((x1+x2)/2, (y1+y2)/2) for x1, y1, x2, y2 in [item['coordinates'] for item in sorted_data]]
+sorted_texts = [item['text'] for item in sorted_data]
+
+# Plotting
+plt.figure(figsize=(10, 10))
+plt.scatter(*zip(*coords), color='blue', s=100)  # Original coordinates
+plt.scatter(*centroid, color='red', s=100, marker='x')  # Centroid
+for i, (coord, text) in enumerate(zip(sorted_coords, sorted_texts)):
+    plt.text(coord[0], coord[1], f"{i+1} = {text}", fontsize=12, ha='center')
+    
+plt.gca().invert_yaxis()  # Invert y-axis to match image coordinates
+plt.title('Sorted Coordinates')
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.grid(True)
+plt.show()
+
+
+def get_NA_num(image_path):
+    color = (174, 92, 55)
+
+    image = cv2.imread(image_path)
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+    # Define the color and threshold
+    threshold = 21
+
+    # Create mask for the given color
+    lower_bound = np.array(color) - threshold
+    upper_bound = np.array(color) + threshold
+    mask = cv2.inRange(image_rgb, lower_bound, upper_bound)
+
+    # Apply mask to the image
+    result = cv2.bitwise_and(image_rgb, image_rgb, mask=mask)
+
+    # Display the masked image
+    # plt.imshow(result)
+    # plt.axis('off')
+    # plt.title('Masked Image')
+    # plt.show()
+
+    contours, _ = cv2.findContours(
+        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # cv2.imshow('Cropped Image', result)
+    # cv2.waitKey(0)
+
+    MIN_CONTOUR_AREA = 200  # You can adjust this value
+    output_data = []
+    # Loop through the contours and crop the image based on bounding box of the contour
+    for contour in contours:
+        if cv2.contourArea(contour) < MIN_CONTOUR_AREA:
+            continue
+        x, y, w, h = cv2.boundingRect(contour)
+        cropped_image = result[y:y+h, x:x+w]
+
+        # Display cropped image
+        # cv2.imshow('Cropped Image', cropped_image)
+        # cv2.waitKey(0)
+
+        gray_image = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+        reader = easyocr.Reader(['en'], gpu=False, verbose=False)
+        ocr_result = reader.readtext(cropped_image)
+
+        extracted_text = ' '.join([item[1] for item in ocr_result])
+
+        # Post-processing: Ensure only numbers remain
+        only_numbers = ''.join(filter(str.isdigit, extracted_text))
+        # print(only_numbers)
+        if len(only_numbers) == 3:
+            formatted_number = only_numbers[:2] + "." + only_numbers[2]
+            # print(formatted_number)
+
+        # output_text = extracted_text.replace(',', '').strip()
+        # output_data.append(output_text)
+        # output_data = [item for item in output_data if item != '']
+        # print(output_data)
+    cv2.destroyAllWindows()
+    return formatted_number
+
+NA_num = get_NA_num(img_path)
+print(NA_num)
+
+index = next(i for i, item in enumerate(sorted_data) if item['text'] == str(NA_num))
+
+# Create a new list starting from the item with 'text' value '23.6' and then wrapping around
+data = sorted_data[index:] + sorted_data[:index]
+
+
 
 # Open the image with PIL
 img_pil = Image.open(img_key_path)
@@ -281,68 +400,80 @@ img_np = np.array(img_pil)
 reader = easyocr.Reader(['en'], gpu=False, verbose=False)
 
 assets = [
-'Corporate Direct',
-'Bond Funds',
-'Sovereign',
-'Cap >',
-'Cap <',
-'North America',
-'Europe',
-'Japan',
-'Asia/China',
-'Global',
-'Property',
-'Alternatives',
-'Cash']
+    'Corporate Direct',
+    'Bond Funds',
+    'Sovereign',
+    'Cap >',
+    'Cap <',
+    'North America',
+    'Europe',
+    'Japan',
+    'Asia/China',
+    'Global',
+    'Property',
+    'Alternatives',
+    'Cash']
 
 keys = []
 
 # Read the text from the image numpy array
 result = reader.readtext(img_np)
 for entry in result:
-    text = entry[1].replace('/','')
+    text = entry[1].replace('/', '')
     keys.append(text)
+
 
 def map_to_assets(input_list):
     # Initially set the result to an empty list
     result = []
-    
+
     # Map items from input_list to corresponding assets
     for item in assets:
         # For 'Cap >' and 'Cap <', always add them regardless of their presence in input_list
-        if item in ['Cap >', 'Cap <','Asia/China']:
+        if item in ['Cap >', 'Cap <', 'Asia/China']:
             result.append(item)
         else:
             result.append(item if item in input_list else "")
-    
+
     return result
+
 
 key_list = map_to_assets(keys)
 
 print(key_list)
 
-index_north_america = keys.index('North America')
+index_north_america = key_list.index('North America')
 
 # Split the list at 'North America' and rearrange
 new_keys = key_list[index_north_america:] + key_list[:index_north_america]
+print(new_keys)
 
-# 
-# 
+#
+#
 # KEYS LIST
 # KEYS LIST
 # KEYS LIST
 # KEYS LIST
-# 
-# 
-# 
+#
+#
+#
+
+
+# unsorted_output = {}
+# for i, entry in enumerate(data):
+#     key = new_keys[i]
+#     if key:
+#         unsorted_output[key] = entry['text']
 
 
 unsorted_output = {}
-for i, entry in enumerate(sorted_data):
-    key = new_keys[i]
-    if key:
-        unsorted_output[key] = entry['text']
+data_index = 0
+for key in new_keys:
+    if key != '':
+        unsorted_output[key] = data[data_index]['text']
+        data_index += 1
 
-sorted_output = {asset: unsorted_output[asset] for asset in assets if asset in unsorted_output}
+sorted_output = {asset: unsorted_output[asset]
+                 for asset in assets if asset in unsorted_output}
 
 print(sorted_output)
