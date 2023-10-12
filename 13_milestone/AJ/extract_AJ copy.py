@@ -26,8 +26,9 @@ def get_data(file):
     print("[INFO] Converting PDF to images...")
     pages = pdf2image.convert_from_path(file,
                                         dpi=300, 
-                                        first_page=10,
-                                        last_page=11,
+                                        first_page=2,
+                                        # first_page=28,
+                                        # last_page=29,
                                         poppler_path=poppler_path)
 
     if not os.path.exists(directory):
@@ -54,7 +55,7 @@ def get_data(file):
     for index, path in enumerate(page_image_paths):
         print(f"[INFO] Processing image: {path}")
         text = pytesseract.image_to_string(Image.open(path))
-        lines = [line.replace('J it','Japan equity').replace('Pacifi -','Pacific ex-') for line in text.split('\n') if line.strip() != '']
+        lines = [line.replace('J it','Japan equity').replace('Pacifi -','Pacific ex-').replace('UK equit','UK equity').replace('E -UK equit','Europe ex-UK equity') for line in text.split('\n') if line.strip() != '']
         # Check if page is even using its index
         even_page = (index + 1) % 2 == 0
         cleaned_lines = clean_text(lines, even_page)
@@ -80,9 +81,12 @@ def get_data(file):
         if match:
             return s[:match.end()]
         return s
-
-    filename = [remove_after_number(page[1]) for i, page in enumerate(data) if i % 2 == 0]
-
+    filename = [
+    remove_after_number(page[1]) if re.search(r"\d+", page[1]) else 
+    (remove_after_number(page[2]) if re.search(r"\d+", page[2]) else 
+    remove_after_number(page[3]))
+    for i, page in enumerate(data) if i % 2 == 0
+    ]
     print("[INFO] Extracting OCF values...")
     OCF = []
     for page in data:
@@ -119,10 +123,16 @@ def get_data(file):
             print('[INFO] float_values =', float_values,)
             
             # Check if there are at least 3 lines with float values
-            if len(float_values) >= 3:
+            if len(float_values) >= 4:
+                if len(float_values[2]) == 2 and len(float_values[3]) >= 3:
+                    performance_values.append(float_values[3])
+                    print('[INFO] Performance values appended:', float_values[3])
+                else:
+                    performance_values.append(float_values[2])
+                    print('[INFO] Performance values appended:', float_values[2])
+            elif len(float_values) == 3:
                 performance_values.append(float_values[2])
                 print('[INFO] Performance values appended:', float_values[2])
-            # If there's only 2 lines, use the second line
             elif len(float_values) == 2:
                 performance_values.append(float_values[1])
                 print('[INFO] Performance values appended (only 2 was):', float_values[1])
