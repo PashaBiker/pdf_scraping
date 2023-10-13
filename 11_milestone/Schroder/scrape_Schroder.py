@@ -36,6 +36,7 @@ def scrape_links(file_urls):
                     time.sleep(5)
 
                     element = driver.find_element(By.CSS_SELECTOR, '.fundexplorer-documentitem')
+                    time.sleep(3)
                     driver.execute_script("window.scrollTo(0, arguments[0].getBoundingClientRect().top + window.pageYOffset - 100);", element)
 
                     time.sleep(2)
@@ -183,8 +184,8 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    # excel_file = 'Schroder Investment Solutions.xlsm'
-    excel_file = '11_milestone\Schroder\Schroder Investment Solutions.xlsm'
+    excel_file = 'Schroder Investment Solutions.xlsm'
+    # excel_file = '11_milestone\Schroder\Schroder Investment Solutions.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)
