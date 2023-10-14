@@ -16,40 +16,22 @@ import os
 from io import BytesIO
 import fitz
 
-def main(img_path,img_key_path):
+def get_assets(img_path,img_key_path):
     img = cv2.imread(img_path)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Display the grayscale image
-    # plt.figure(figsize=(10, 10))
-    # plt.imshow(gray, cmap='gray')
-    # plt.axis('off')
-    # plt.show()
 
     thresh = cv2.adaptiveThreshold(gray, 255, 
                                 cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
                                 cv2.THRESH_BINARY_INV, 11, 2)
 
-    # Display the thresholded image
-    # plt.figure(figsize=(10, 10))
-    # plt.imshow(thresh, cmap='gray')
-    # plt.axis('off')
-    # plt.show()
-
     imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(imgray, 220, 255, 0)
-    # ret, thresh = cv2.threshold(imgray, 127, 255, 0)
-    # ?
+
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     print("Number of contours = " + str(len(contours)))
 
     cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
     cv2.drawContours(imgray, contours, -1, (0, 255, 0), 3)
-
-    # cv2.imshow('Image', img)
-    # cv2.imshow('Image GRAY', imgray)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
 
     sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
 
@@ -92,11 +74,6 @@ def main(img_path,img_key_path):
         for idx in group:
             cv2.drawContours(output, [contours[idx]], -1, color, 3)
 
-    # plt.figure(figsize=(10, 10))
-    # plt.imshow(cv2.cvtColor(output, cv2.COLOR_BGR2RGB))
-    # plt.axis('off')
-    # plt.show()
-
     def apply_ocr_to_grouped_contours(image, contours, groups):
         output = image.copy()
         group_data = []
@@ -116,12 +93,7 @@ def main(img_path,img_key_path):
             # Extract the expanded region of interest (ROI) and scale it
             roi = thresh[y_start:y_end, x_start:x_end]
             scaled_roi = cv2.resize(roi, (w*5, h*5), interpolation=cv2.INTER_CUBIC)
-            # cv2.imshow("Scaled ROI", scaled_roi)
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
-            # Apply OCR on the scaled ROI
-            # text = pytesseract.image_to_string(scaled_roi, config='--psm 6')
-            # text = text.strip()
+
             reader = easyocr.Reader(['en'], gpu=False, verbose=False)
             result = reader.readtext(scaled_roi)
             text = result
@@ -150,14 +122,6 @@ def main(img_path,img_key_path):
                     else:
                         cleaned_text = cleaned_text[:4]
                         
-                # print(cleaned_text, '- cleaned text')
-            # for entry in result:
-            #     text = entry[1]
-            #     # Remove non-digit characters except for the dot
-            #     print(text, '- non cleaned text')
-            #     cleaned_text = ''.join([char for char in text if char.isdigit() or char == '.'])
-            #     print(cleaned_text, '- cleaned text')
-
                 # Check if the cleaned text consists of 2 digits and insert dot between them
                 if cleaned_text.isdigit() and len(cleaned_text) == 2:
                     cleaned_text = cleaned_text[0] + '.' + cleaned_text[1]
@@ -167,14 +131,7 @@ def main(img_path,img_key_path):
                     group_data.append({"coordinates": (x, y, x + w, y + h), "text": cleaned_text})
                     cv2.rectangle(output, (x, y), (x+w, y+h), (255, 0, 0), 2)
                     cv2.putText(output, cleaned_text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
-            # for entry in result:
-            #     text = entry[1]
-            #     print(text)
-            #     if text.isdigit() and len(text) == 2:
-            #         text = text[0] + '.' + text[1]
-            #     cv2.rectangle(output, (x, y), (x+w, y+h), (255, 0, 0), 2)
-            #     cv2.putText(output, text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
-        
+
         return output, group_data
 
     # Apply OCR and visualize the result
@@ -199,20 +156,6 @@ def main(img_path,img_key_path):
     # Display the filtered data
     for entry in filtered_data:
         print(entry)
-
-    plt.figure(figsize=(15, 15))
-    plt.imshow(output_image_rgb)
-    plt.axis('off')
-    plt.show()
-
-
-
-    # 
-    # 
-    # 
-    # 
-    # 
-    # 
 
     coords = [((x1+x2)/2, (y1+y2)/2) for x1, y1, x2, y2 in [item['coordinates'] for item in filtered_data]]
     centroid = np.mean(coords, axis=0)
@@ -245,20 +188,6 @@ def main(img_path,img_key_path):
     for i, (coord, text) in enumerate(zip(sorted_coords, sorted_texts)):
         plt.text(coord[0], coord[1], f"{i+1} = {text}", fontsize=12, ha='center')
         
-    plt.gca().invert_yaxis()  # Invert y-axis to match image coordinates
-    plt.title('Sorted Coordinates')
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.grid(True)
-    plt.show()
-
-    # we get sorted data == coordinates and text, we take only text:
-    # we get sorted data == coordinates and text, we take only text:
-    # we get sorted data == coordinates and text, we take only text:
-    # we get sorted data == coordinates and text, we take only text:
-    # we get sorted data == coordinates and text, we take only text:
-
-
     for info in sorted_data:
         print(f"Coordinates: {info['coordinates']}, Text: {info['text']}")
         print(f"{info['coordinates']},{info['text']}")
@@ -295,16 +224,8 @@ def main(img_path,img_key_path):
         # Apply mask to the image
         result = cv2.bitwise_and(image_rgb, image_rgb, mask=mask)
 
-        # Display the masked image
-        # plt.imshow(result)
-        # plt.axis('off')
-        # plt.title('Masked Image')
-        # plt.show()
-
         contours, _ = cv2.findContours(
             mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        # cv2.imshow('Cropped Image', result)
-        # cv2.waitKey(0)
 
         MIN_CONTOUR_AREA = 200  # You can adjust this value
         output_data = []
@@ -314,10 +235,6 @@ def main(img_path,img_key_path):
                 continue
             x, y, w, h = cv2.boundingRect(contour)
             cropped_image = result[y:y+h, x:x+w]
-
-            # Display cropped image
-            # cv2.imshow('Cropped Image', cropped_image)
-            # cv2.waitKey(0)
 
             gray_image = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
             reader = easyocr.Reader(['en'], gpu=False, verbose=False)
@@ -330,12 +247,7 @@ def main(img_path,img_key_path):
             # print(only_numbers)
             if len(only_numbers) == 3:
                 formatted_number = only_numbers[:2] + "." + only_numbers[2]
-                # print(formatted_number)
 
-            # output_text = extracted_text.replace(',', '').strip()
-            # output_data.append(output_text)
-            # output_data = [item for item in output_data if item != '']
-            # print(output_data)
         cv2.destroyAllWindows()
         return formatted_number
 
@@ -407,24 +319,6 @@ def main(img_path,img_key_path):
     new_keys = key_list[index_north_america:] + key_list[:index_north_america]
     print(new_keys)
 
-    #
-    #
-    # KEYS LIST
-    # KEYS LIST
-    # KEYS LIST
-    # KEYS LIST
-    #
-    #
-    #
-
-
-    # unsorted_output = {}
-    # for i, entry in enumerate(data):
-    #     key = new_keys[i]
-    #     if key:
-    #         unsorted_output[key] = entry['text']
-
-
     unsorted_output = {}
     data_index = 0
     for key in new_keys:
@@ -459,7 +353,6 @@ def extract_images_from_pdf(pdf_path, output_folder):
                     
     doc.close()
 
-
 def crop_image(img_path, output_folder1, output_folder2, original_dims=(1240, 954), target_dims1=(940, 820), target_dims2=(300, 954)):
     with Image.open(img_path) as img:
         if img.size == original_dims:
@@ -493,7 +386,6 @@ def crop_image(img_path, output_folder1, output_folder2, original_dims=(1240, 95
         else:
             print(f"Skipped {img_path} as its dimensions are not {original_dims}")
 
-
 def crop_all_images_in_folder(folder_path):
     output_folder1 = os.path.join(folder_path, "JM Finn Cropped assets")
     output_folder2 = os.path.join(folder_path, "JM Finn Cropped keys")
@@ -502,32 +394,39 @@ def crop_all_images_in_folder(folder_path):
         for file in files:
             if file.lower().endswith(('.png', '.jpg', '.jpeg')):
                 full_path = os.path.join(root, file)
-                crop_image(full_path, output_folder1,output_folder2)
+                crop_image(full_path, output_folder1, output_folder2)
 
-
-def crop_and_extract_images():
-    input_folder = '14_milestone\JM Finn\JM Finn PDFs'
+def crop_and_extract_images(pdf_path):
     image_output_folder = '14_milestone\JM Finn\JM Finn Images'
-    cropped_output_folder = os.path.join(image_output_folder, "JM Finn Cropped Images")
-
-    # Extract images from PDF
+    cropped_output_folder = os.path.join(image_output_folder)
+    output_folder1 = os.path.join(cropped_output_folder, "JM Finn Cropped assets")
+    output_folder2 = os.path.join(cropped_output_folder, "JM Finn Cropped keys")
+    
+    # Make sure folders exist
     if not os.path.exists(image_output_folder):
         os.makedirs(image_output_folder)
-    for filename in os.listdir(input_folder):
-        if filename.endswith(".pdf"):
-            pdf_path = os.path.join(input_folder, filename)
-            extract_images_from_pdf(pdf_path, image_output_folder)
-    print("Image extraction completed!")
 
-    # Crop extracted images
+    # Extract images from the provided PDF
+    extract_images_from_pdf(pdf_path, image_output_folder)
+    print("Image extraction completed!")
+    
+    # Crop extracted images and store them in the respective folders
     crop_all_images_in_folder(image_output_folder)
     print("Cropping process complete!")
+
+    # Collect cropped asset and key images
+    assets_images = [os.path.join(output_folder1, img) for img in os.listdir(output_folder1) if os.path.exists(output_folder1) and img.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    keys_images = [os.path.join(output_folder2, img) for img in os.listdir(output_folder2) if os.path.exists(output_folder2) and img.lower().endswith(('.png', '.jpg', '.jpeg'))]
+
+    return assets_images, keys_images
 
 
 
 if __name__ == "__main__":
-    crop_and_extract_images()
-
+    pdf = '14_milestone\JM Finn\JM Finn PDFs\CSI Growth Portfolio.pdf' # replace with your actual path
+    assets, keys = crop_and_extract_images(pdf)
+    print(f"Assets Images: {assets}")
+    print(f"Keys Images: {keys}")
     # Path to your folder
     assets_folder_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped assets'  # Update with the path to your folder
     keys_folder_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped keys'  # Update with the path to your folder
@@ -552,13 +451,6 @@ if __name__ == "__main__":
 
     # Print out all the image files
     for img_path, img_key_path in zip(all_assets, all_keys):
-        main(img_path, img_key_path)
+        get_assets(img_path, img_key_path)
         print(img_path+'\n'+img_key_path)
     
-
-    """
-    {'Corporate Direct': '0.4', 'Bond Funds': '4.3', 'Cap >': '21.5', 'Cap <': '2.5', 'North America': '31.8', 'Europe': '7.4', 'Japan': '5.7', 'Asia/China': '9.2', 'Global': '1.5', 'Property': 
-'2.8', 'Alternatives': '9.8', 'Cash': '3.0'}
-{'Corporate Direct': '3.3', 'Bond Funds': '11.3', 'Sovereign': '2.4', 'Cap >': '19.7', 'Cap <': '2.2', 'North America': '23.6', 'Europe': '6.0', 'Japan': '4.6', 'Asia/China': '5.1', 'Global': '1.0', 'Property': '2.7', 'Alternatives': '12.0', 'Cash': '6.1'}
-    
-    """
