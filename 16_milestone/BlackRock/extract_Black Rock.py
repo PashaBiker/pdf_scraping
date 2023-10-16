@@ -19,41 +19,47 @@ from bs4 import BeautifulSoup
 import json
 import requests
 from requests_html import HTMLSession
+# pip install requests-html
 
-excel_file = '16_milestone\BlackRock\BlackRock.xlsm'
+excel_file = 'BlackRock.xlsm'
 
 def get_data(url):
     AMC = 0.0
-    driver = webdriver.Chrome()
-    driver.get(url)
+    headers = {
+    'authority': 'www.blackrock.com',
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+    'cache-control': 'max-age=0',
+    'sec-ch-ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'document',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-site': 'none',
+    'sec-fetch-user': '?1',
+    'upgrade-insecure-requests': '1',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+    }
 
-    element_present = EC.presence_of_element_located((By.XPATH, '//*[@id="performance"]'))
-    WebDriverWait(driver, 30).until(element_present)
+    session = HTMLSession()
+    response = session.get(url, headers=headers)
+    response.html.render(sleep=4, timeout=20.0)  # render the JavaScript-loaded content
 
-    html_content = driver.page_source
-    soup = BeautifulSoup(html_content, 'html.parser')
-    # print(date_text)
+    cumulative_div = response.html.find('#subTabCumulative', first=True)
+    # print(cumulative_div.html)
+    date = cumulative_div.find('option[selected]', first=True).text.replace('/', ' ')
+    one_month = cumulative_div.find('td.oneMonth', first=True).text
+    one_year = cumulative_div.find('td.oneYear', first=True).text
 
-    cumulative_div = soup.find("div", {"id": "subTabCumulative"})
+    OCF = response.html.find('div.col-onch span.data', first=True).text.replace('%', '')
 
-    date = cumulative_div.find('option', selected=True).get_text(strip=True).replace('/', ' ')
-    one_month = cumulative_div.find('td', class_='oneMonth').get_text(strip=True)
-    one_year = cumulative_div.find('td', class_='oneYear').get_text(strip=True)
-
-    # print(ocf_text)
-    # OCF = re.search(r'(\d+\.\d+)', ocf_text).group(1)
-    # print(ocf)
-    # print(one_month_one_year_text[2])
-
-    OCF = soup.find('div', class_='col-onch').find('span', class_='data').text.replace('%','')
     try:
-        AMC = soup.find('div', class_='col-mer').find('span', class_='data').text
+        AMC = response.html.find('div.col-mer span.data', first=True).text.replace('%', '')
+        if AMC == '-':
+            AMC = 0
     except:
-        AMC = 0.0
+        AMC = 0
 
-    # print(f'Ongoing Charges Figures: {ongoing_charges_figures}')
-    # print(f'Annual Management Fee: {annual_management_fee}')
-            
     print(date)
     print(one_month)
     print(one_year)
@@ -87,85 +93,97 @@ def get_data(url):
     }
 
     session = HTMLSession()
-
+    print(url)
     response = session.get(url, headers=headers)
 
     # Ожидание 4 секунды
-    response.html.render(sleep=4, timeout=20.0)
+    response.html.render(sleep=8, timeout=20.0)
 
     # Если вы хотите работать с содержимым ответа
     html_content = response.html.html
 
     # print(html_content)
 
-    import re
 
     # Extract JSON-like strings from the HTML content
     try:
-        tabsAssetclassDataTable = re.search(r'var tabsAssetclassDataTable =(\[.*?\]);', html_content).group(1)[1:-1]
-        subTabsCountriesDataTable = re.search(r'var subTabsCountriesDataTable =(\[.*?\]);', html_content).group(1)[1:-1]
-        subTabsRegionsDataTable = re.search(r'var subTabsRegionsDataTable =(\[.*?\]);', html_content).group(1)[1:-1]
+        extracted_data = []
 
-    # Combine the extracted data
-    combined_data = f"[{tabsAssetclassDataTable},{subTabsCountriesDataTable},{subTabsRegionsDataTable}]"
+        # Define the patterns and their corresponding replacements for "Other"    2598.53 
+        patterns = {
+            r'var tabsAssetclassDataTable =(\[.*?\]);': 'Other Assets',
+            r'var subTabsRegionsDataTable =(\[.*?\]);': 'Other Regions',
+            r'var subTabsCountriesDataTable =(\[.*?\]);': 'Other Countries'
+        }
 
-    # Fix the JSON format
-    corrected_json_string = re.sub(r',\s*}', '}', combined_data)
+        for pattern, replacement in patterns.items():
+            match = re.search(pattern, html_content)
+            print(match, '--match')
+            if not match:
+                continue
+                
+            matched_string = match.group(1)
+            corrected_match = re.sub(r',\s*}', '}', matched_string)
+            print(corrected_match, '-- corrtected match')
+            
+            try:
+                data_list = json.loads(corrected_match)
 
-    # Parse the corrected JSON string
-    data = json.loads(corrected_json_string)
+                for item in data_list:
+                    if item.get("name") == "Other":
+                        item["name"] = replacement
 
-    # Extract name-value pairs
-    name_value_pairs = [(entry["name"], entry["value"]) for entry in data]
-    asset_values = {}
-    sum_values = sum(float(entry["value"]) for entry in data)
-    # asset_labels = ['Fixed Income (FI)',
-    #                 'Equity (EQ)',
-    #                 'Alternatives',
-    #                 'Cash and/or Derivatives',
-    #                 'North America',
-    #                 'Europe',
-    #                 'Asia Pacific',
-    #                 'Latin America',
-    #                 'World',
-    #                 'Africa',
-    #                 'Other',
-    #                 'United States',
-    #                 'United Kingdom',
-    #                 'Japan',
-    #                 'China',
-    #                 'Germany',
-    #                 'France',
-    #                 'Canada',
-    #                 'Switzerland',
-    #                 'Australia',
-    #                 'Supranational',
-    #                 'Net Derivatives',
-    #                 'Cash',
-    #                 'Other',]
+                extracted_data.append(data_list)
+            except Exception as e:
+                print(f"Error: {e}")
+                continue
 
-    # asset_labels = sorted(asset_labels, key=lambda x: len(x), reverse=True)
+        # Flatten the list of lists
+        flattened_data = [item for sublist in extracted_data for item in sublist]
 
-    # asset_values = {word: 0 for word in asset_labels}
-    # total = 0.0
-    # for line in assets_text:
-    #     for label in asset_labels:
-    #         if label in line:
-    #             match = re.search(r'(\d+\.\d+)%', line)
-    #             if match:
-    #                 asset_values[label] = float(match.group(1))
-    #                 total += float(match.group(1))
-    # print(asset_values)
-    # print(total)
-    for name, value in name_value_pairs:
-        asset_values[name] = float(value)
-    print(asset_values)
-    print(f"\nTotal Sum: {sum_values:.2f}")
+        print(flattened_data, ' -- combined data')
 
-    return one_year,one_month, asset_values, OCF, date
+        # Extract name-value pairs and compute the total sum
+        name_value_pairs = [(entry.get("name"), entry.get("value")) for entry in flattened_data if "name" in entry and "value" in entry]
+        asset_values = {name: float(value.replace("%", "")) for name, value in name_value_pairs}
+
+        print(asset_values, '-- asset values')
+        print(f"\nTotal Sum: {sum(asset_values.values()):.2f}")
+        
+    except Exception as e:
+        print(e)
+        asset_labels = ['Fixed Income (FI)',
+                    'Equity (EQ)',
+                    'Alternatives',
+                    'Cash and/or Derivatives',
+                    'North America',
+                    'Europe',
+                    'Asia Pacific',
+                    'Latin America',
+                    'World',
+                    'Africa',
+                    'Other Regions',
+                    'United States',
+                    'United Kingdom',
+                    'Japan',
+                    'China',
+                    'Germany',
+                    'France',
+                    'Canada',
+                    'Switzerland',
+                    'Australia',
+                    'Supranational',
+                    'Net Derivatives',
+                    'Cash',
+                    'Other Locations',]
+
+        asset_labels = sorted(asset_labels, key=lambda x: len(x), reverse=True)
+        asset_values = {word: 0 for word in asset_labels}
+        
+    return one_year,one_month, asset_values, OCF,AMC, date
     # return asset_values, date
 
-def write_to_sheet(one_year,one_month, assets, OCF, spreadsheet, filename, date):
+def write_to_sheet(one_year,one_month, assets, OCF,AMC, spreadsheet, filename, date):
 
     try:
         app = xw.App(visible=False)
@@ -185,15 +203,19 @@ def write_to_sheet(one_year,one_month, assets, OCF, spreadsheet, filename, date)
 
                 cellc = sheet.range('C'+str(i+1))
                 cellc.value = float(OCF)/100
-                cellc.number_format = '0.00%'
+                cellc.number_format = '0,00%'
 
                 celld = sheet.range('D'+str(i+1))
-                celld.value = float(one_year)/100
-                celld.number_format = '0.00%'
+                celld.value = float(AMC)/100
+                celld.number_format = '0,00%'
 
                 celle = sheet.range('E'+str(i+1))
                 celle.value = float(one_month)/100
-                celle.number_format = '0.00%'
+                celle.number_format = '0,00%'
+
+                cellf = sheet.range('F'+str(i+1))
+                cellf.value = float(one_year)/100
+                cellf.number_format = '0,00%'
 
         wb.save()
 
@@ -225,7 +247,7 @@ def write_to_sheet(one_year,one_month, assets, OCF, spreadsheet, filename, date)
                     cell = sheet.range(
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(str(value).replace(',', '')) / 100
-                    cell.number_format = '0.00%'
+                    cell.number_format = '0,00%'
 
 
     except Exception as e:
@@ -276,9 +298,7 @@ if __name__ == '__main__':
     filenames, urls = filenames(excel_file)
 
     for filename, url in zip(filenames, urls):
-        one_year, one_month, assets, OCF, date = get_data(url)
-        write_to_sheet(one_year, one_month, assets, OCF, excel_file, filename, date)
-
-            # write_to_sheet(one_year,one_month, assets, AMC, excel_file,pdf.split('\\')[-1].split('.')[0], date)
+        one_year, one_month, assets, OCF,AMC,date = get_data(url)
+        write_to_sheet(one_year, one_month, assets, OCF,AMC, excel_file, filename, date)
 
     print('\nDone!')
