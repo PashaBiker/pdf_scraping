@@ -22,6 +22,10 @@ import requests
 import xlwings as xw
 import threading
 
+out_path = '14_milestone\JM Finn\JM Images' 
+excel_file = '14_milestone\JM Finn\JM Finn and Co.xlsm'
+pdf_folder = '14_milestone\JM Finn\JM Finn PDFs' 
+
 def download_pdfs(spreadsheet):
     print('Downloading PDFs...')
     
@@ -99,7 +103,7 @@ def get_assets(img_path,img_key_path):
     cv2.drawContours(imgray, contours, -1, (0, 255, 0), 3)
 
     sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
-    print('[INFO] Soriing contours')
+    print('[INFO] Sorting contours')
 
     def compute_centroid(contour):
         M = cv2.moments(contour)
@@ -130,7 +134,7 @@ def get_assets(img_path,img_key_path):
         return groups
 
     # Group contours
-    threshold_distance = 45  # This is a value you might need to tweak based on your specific image and requirements
+    threshold_distance = 65  # This is a value you might need to tweak based on your specific image and requirements
     groups = group_contours(contours, threshold_distance)
 
     # Visualizing the grouped contours
@@ -139,12 +143,22 @@ def get_assets(img_path,img_key_path):
         color = tuple(np.random.randint(0, 255, 3).tolist())  # random color for each group
         for idx in group:
             cv2.drawContours(output, [contours[idx]], -1, color, 3)
+ 
+    # Split a list into N chunks
+    def split_into_chunks(lst, num):
+        avg = len(lst) / float(num)
+        out = []
+        last = 0.0
+        while last < len(lst):
+            out.append(lst[int(last):int(last + avg)])
+            last += avg
+        return out
 
-    def apply_ocr_to_grouped_contours(image, contours, groups):
-        output = image.copy()
-        group_data = []
-
-        for group in groups:
+    # Thread worker function
+    def thread_worker(chunk_of_groups, image, contours, output, group_data_list, lock):
+        reader = easyocr.Reader(['en'], gpu=False, verbose=False)
+        local_group_data = []
+        for group in chunk_of_groups:
             # Combine all contours in the group to get a single bounding rectangle
             combined_contours = np.vstack([contours[i] for i in group])
             x, y, w, h = cv2.boundingRect(combined_contours)
@@ -160,12 +174,11 @@ def get_assets(img_path,img_key_path):
             roi = thresh[y_start:y_end, x_start:x_end]
             scaled_roi = cv2.resize(roi, (w*5, h*5), interpolation=cv2.INTER_CUBIC)
 
-            reader = easyocr.Reader(['en'], gpu=False, verbose=False)
             result = reader.readtext(scaled_roi)
             text = result
             # Draw bounding rectangle and place OCR result on the image
             for entry in result:
-                text = entry[1]
+                text = entry[1].replace('-','')
                 # print(text, '- non cleaned text')
                 
                 cleaned = []
@@ -193,13 +206,38 @@ def get_assets(img_path,img_key_path):
                     cleaned_text = cleaned_text[0] + '.' + cleaned_text[1]
 
                 if cleaned_text:  # If the cleaned text is not empty
-                    # print(text, "\n")
-                    group_data.append({"coordinates": (x, y, x + w, y + h), "text": cleaned_text})
+                    print(text, "\n")
+                    local_group_data.append({"coordinates": (x, y, x + w, y + h), "text": cleaned_text})
                     cv2.rectangle(output, (x, y), (x+w, y+h), (255, 0, 0), 2)
                     cv2.putText(output, cleaned_text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
             print('[INFO] Using OCR to get nums')
 
-        return output, group_data
+        # Using a lock to safely append local results to the shared list
+        lock.acquire()
+        group_data_list.extend(local_group_data)
+        lock.release()
+
+    def apply_ocr_to_grouped_contours(image, contours, groups):
+        output = image.copy()
+        group_data_list = []
+        num_threads = 8  # Choose based on your preference
+        group_chunks = split_into_chunks(groups, num_threads)
+
+        # Using a thread lock for safe appending to the shared list
+        lock = threading.Lock()
+        
+        threads = []
+        for i in range(num_threads):
+            t = threading.Thread(target=thread_worker, args=(group_chunks[i], image, contours, output, group_data_list, lock))
+            t.start()
+            threads.append(t)
+
+        # Wait for all threads to complete
+        for t in threads:
+            t.join()
+
+        print(group_data_list, '--- group data lsit')
+        return output, group_data_list
 
     # Apply OCR and visualize the result
     output_image, group_info = apply_ocr_to_grouped_contours(img, contours, groups)
@@ -262,8 +300,8 @@ def get_assets(img_path,img_key_path):
 
     # Use list comprehension to create a new list excluding unwanted coordinates
     filtered_data = [entry for entry in sorted_data if entry['coordinates'] not in filtered_coordinates]
-
-    # print(filtered_data)
+    filtered_data = [entry for entry in filtered_data if entry['text'] not in ('0', '0.0')]
+    print(filtered_data)
     # Display the filtered data
 
     def get_NA_num(image_path):
@@ -279,6 +317,7 @@ def get_assets(img_path,img_key_path):
         lower_bound = np.array(color) - threshold
         upper_bound = np.array(color) + threshold
         mask = cv2.inRange(image_rgb, lower_bound, upper_bound)
+
 
         # Apply mask to the image
         result = cv2.bitwise_and(image_rgb, image_rgb, mask=mask)
@@ -304,7 +343,7 @@ def get_assets(img_path,img_key_path):
             # Post-processing: Ensure only numbers remain
             only_numbers = ''.join(filter(str.isdigit, extracted_text))
             # print(only_numbers)
-            if len(only_numbers) == 3:
+            if len(only_numbers) >= 3:
                 formatted_number = only_numbers[:2] + "." + only_numbers[2]
 
         cv2.destroyAllWindows()
@@ -314,67 +353,56 @@ def get_assets(img_path,img_key_path):
 
     print('[INFO] NA digit is ',NA_num)
 
-    index = next(i for i, item in enumerate(sorted_data) if item['text'] == str(NA_num))
+    index = next(i for i, item in enumerate(filtered_data) if item['text'] == str(NA_num))
 
-    # Create a new list starting from the item with 'text' value '23.6' and then wrapping around
-    data = sorted_data[index:] + sorted_data[:index]
+    # Create a new list starting from the item with 'text' value and then wrapping around
+    data = filtered_data[index:] + filtered_data[:index]
 
-
-
+    print(data, '--- data 308 line')
     # Open the image with PIL
-    img_pil = Image.open(img_key_path)
+    # img_pil = Image.open(img_key_path)
 
-    # Convert the PIL Image object to a numpy array
-    img_np = np.array(img_pil)
+    # # Convert the PIL Image object to a numpy array
+    # img_np = np.array(img_pil)
 
-    # Create the EasyOCR reader
-    reader = easyocr.Reader(['en'], gpu=False, verbose=False)
+    # # Create the EasyOCR reader
+    # reader = easyocr.Reader(['en'], gpu=False, verbose=False)
 
-    assets = [
-        'Corporate Direct',
-        'Bond Funds',
-        'Sovereign',
-        'Cap >',
-        'Cap <',
-        'North America',
-        'Europe',
-        'Japan',
-        'Asia/China',
-        'Global',
-        'Property',
-        'Alternatives',
-        'Cash']
+    assets = ['Fixed Income', 'UK Equities',
+          'Intl. Equities', 'Property', 'Alternatives', 'Cash']
 
-    keys = []
+    # keys = []
 
-    # Read the text from the image numpy array
-    result = reader.readtext(img_np)
-    for entry in result:
-        text = entry[1].replace('/', '')
-        keys.append(text)
+    # # Read the text from the image numpy array
+    # result = reader.readtext(img_np)
+    # for entry in result:
+    #     text = entry[1].replace('/', '').replace(':','.')
+    #     keys.append(text)
 
+    # print(keys)
 
-    def map_to_assets(input_list):
-        # Initially set the result to an empty list
-        result = []
+    # def map_to_assets(input_list):
+    #     # Initially set the result to an empty list
+    #     result = []
 
-        # Map items from input_list to corresponding assets
-        for item in assets:
-            # For 'Cap >' and 'Cap <', always add them regardless of their presence in input_list
-            if item in ['Cap >', 'Cap <', 'Asia/China']:
-                result.append(item)
-            else:
-                result.append(item if item in input_list else "")
+    #     # Map items from input_list to corresponding assets
+    #     for item in assets:
+    #         # For 'Cap >' and 'Cap <', always add them regardless of their presence in input_list
+    #         if item in ['Cap >', 'Cap <', 'Asia/China']:
+    #             result.append(item)
+    #         else:
+    #             result.append(item if item in input_list else "")
 
-        return result
+    #     return result
 
 
-    key_list = map_to_assets(keys)
+    # key_list = keys
+    # key_list = map_to_assets(keys)
 
-    index_north_america = key_list.index('North America')
+    index_north_america = assets.index('Intl. Equities')
 
     # Split the list at 'North America' and rearrange
-    new_keys = key_list[index_north_america:] + key_list[:index_north_america]
+    new_keys = assets[index_north_america:] + assets[:index_north_america]
 
     print('[INFO] Finish, the output:')
     unsorted_output = {}
@@ -388,10 +416,6 @@ def get_assets(img_path,img_key_path):
                     for asset in assets if asset in unsorted_output}
 
     print(sorted_output)
-    
-    sorted_output['Mkt Cap >£2bn'] = sorted_output.pop('Cap >')
-    sorted_output['Mkt Cap < £2bn'] = sorted_output.pop('Cap <')
-    sorted_output['Sovereign/Supernational'] = sorted_output.pop('Sovereign')
 
     return sorted_output
 
@@ -460,7 +484,7 @@ def crop_all_images_in_folder(folder_path):
                 crop_image(full_path, output_folder1, output_folder2)
 
 def extract_images_from_pdf(pdf_path):
-    target_resolution = (1240, 954)
+    target_resolution = 600
     doc = fitz.open(pdf_path)
     images = []
 
@@ -473,21 +497,19 @@ def extract_images_from_pdf(pdf_path):
             image_bytes = base_image["image"]
             image = Image.open(BytesIO(image_bytes))
 
-            if image.size == target_resolution:
+            if image.height >= target_resolution:
                 images.append(image)
 
     doc.close()
     return images
 
 def crop_from_image(img, crop_type):
-    original_dims = (1240, 954)
-    if img.size != original_dims:
-        return None
+    width, height = img.size
 
     if crop_type == 'assets':
-        return img.crop((0, original_dims[1] - 820, 940, original_dims[1]))
+        return img.crop((0, 0, width - 500, height))
     elif crop_type == 'keys':
-        return img.crop((original_dims[0] - 300, 0, original_dims[0], 954))
+        return img.crop((width - 500, 0, width, height))
     else:
         return None
     
@@ -571,8 +593,9 @@ def additional_info(pdf):
             if 'Ongoing Charges' in line:
                 OCF = re.findall(r'\d+\.\d+', line)[0]
         found_line = False
+        
         for i, line in enumerate(text_2_page):
-            matches = re.findall(r"\d+\.\d+%", line)
+            matches = re.findall(r"\d+\.\d+", line)
             if len(matches) > 3 and not found_line:
                 years_matches = re.findall(r"(-?\d+\.\d+)", line)
 
@@ -582,11 +605,11 @@ def additional_info(pdf):
 
                 found_line = True
 
-        print(date)
-        print(OCF)
-        print("1yr:", _1yr)
-        print("3yr:", _3yr)
-        print("5yr:", _5yr)
+    print(date)
+    print(OCF)
+    print("1yr:", _1yr)
+    print("3yr:", _3yr)
+    print("5yr:", _5yr)
 
     return _1yr, _3yr, _5yr, OCF, date
 
@@ -678,10 +701,9 @@ def column_letter_from_index(index):
 
 
 if __name__ == "__main__":
-    out_path = '14_milestone\JM Finn\JM Images' 
-    excel_file = '14_milestone\JM Finn\JM Finn and Co.xlsm'
-    pdf_folder = '14_milestone\JM Finn\JM Finn PDFs' 
 
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
 
     pdf_folder = download_pdfs(excel_file) 
 

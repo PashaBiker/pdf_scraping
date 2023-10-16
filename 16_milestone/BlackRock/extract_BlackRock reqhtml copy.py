@@ -25,36 +25,41 @@ excel_file = '16_milestone\BlackRock\BlackRock.xlsm'
 
 def get_data(url):
     AMC = 0.0
-    driver = webdriver.Chrome()
-    driver.get(url)
+    headers = {
+    'authority': 'www.blackrock.com',
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+    'cache-control': 'max-age=0',
+    'sec-ch-ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'document',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-site': 'none',
+    'sec-fetch-user': '?1',
+    'upgrade-insecure-requests': '1',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+    }
 
-    element_present = EC.presence_of_element_located((By.XPATH, '//*[@id="performance"]'))
-    WebDriverWait(driver, 30).until(element_present)
+    session = HTMLSession()
+    response = session.get(url, headers=headers)
+    response.html.render(sleep=4, timeout=20.0)  # render the JavaScript-loaded content
 
-    html_content = driver.page_source
-    soup = BeautifulSoup(html_content, 'html.parser')
-    # print(date_text)
+    cumulative_div = response.html.find('#subTabCumulative', first=True)
+    # print(cumulative_div.html)
+    date = cumulative_div.find('option[selected]', first=True).text.replace('/', ' ')
+    one_month = cumulative_div.find('td.oneMonth', first=True).text
+    one_year = cumulative_div.find('td.oneYear', first=True).text
 
-    cumulative_div = soup.find("div", {"id": "subTabCumulative"})
+    OCF = response.html.find('div.col-onch span.data', first=True).text.replace('%', '')
 
-    date = cumulative_div.find('option', selected=True).get_text(strip=True).replace('/', ' ')
-    one_month = cumulative_div.find('td', class_='oneMonth').get_text(strip=True)
-    one_year = cumulative_div.find('td', class_='oneYear').get_text(strip=True)
-
-    # print(ocf_text)
-    # OCF = re.search(r'(\d+\.\d+)', ocf_text).group(1)
-    # print(ocf)
-    # print(one_month_one_year_text[2])
-
-    OCF = soup.find('div', class_='col-onch').find('span', class_='data').text.replace('%','')
     try:
-        AMC = soup.find('div', class_='col-mer').find('span', class_='data').text.replace('%','')
+        AMC = response.html.find('div.col-mer span.data', first=True).text.replace('%', '')
+        if AMC == '-':
+            AMC = 0
     except:
         AMC = 0
 
-    # print(f'Ongoing Charges Figures: {ongoing_charges_figures}')
-    # print(f'Annual Management Fee: {annual_management_fee}')
-            
     print(date)
     print(one_month)
     print(one_year)
@@ -95,7 +100,7 @@ def get_data(url):
     response.html.render(sleep=8, timeout=20.0)
 
     # Если вы хотите работать с содержимым ответа
-    # html_content = response.html.html
+    html_content = response.html.html
 
     # print(html_content)
 
@@ -114,13 +119,30 @@ def get_data(url):
                 pass
 
         # Соединим все успешно извлеченные данные
+
+
         combined_data = "[" + ",".join(extracted_data) + "]"
-        print(combined_data)
+        
+        corrected_data = re.sub(r',\s*}', '}', combined_data)
+        data_list = json.loads(corrected_data)
+        other_counter = 0
+        for item in data_list:
+            if item["name"] == "Other":
+                other_counter += 1
+                if other_counter == 1:
+                    item["name"] = "Other Regions"
+                elif other_counter == 2:
+                    item["name"] = "Other Locations"
+
+        # Convert it back to a string if needed
+        modified_combined_data = json.dumps(data_list)
+
+        print(combined_data, ' -- combined data')
         # Fix the JSON format
-        corrected_json_string = re.sub(r',\s*}', '}', combined_data)
+        # corrected_json_string = re.sub(r',\s*}', '}', combined_data)
 
         # Parse the corrected JSON string
-        data = json.loads(corrected_json_string)
+        data = json.loads(modified_combined_data)
 
         # Extract name-value pairs
         name_value_pairs = [(entry["name"], entry["value"]) for entry in data]
@@ -128,10 +150,11 @@ def get_data(url):
         sum_values = sum(float(entry["value"]) for entry in data)
         for name, value in name_value_pairs:
             asset_values[name] = float(value.replace("%",""))
-        print(asset_values)
+        print(asset_values, '-- asset values')
         print(f"\nTotal Sum: {sum_values:.2f}")
         
-    except:
+    except Exception as e:
+        print(e)
         asset_labels = ['Fixed Income (FI)',
                     'Equity (EQ)',
                     'Alternatives',
@@ -142,7 +165,7 @@ def get_data(url):
                     'Latin America',
                     'World',
                     'Africa',
-                    'Other',
+                    'Other Regions',
                     'United States',
                     'United Kingdom',
                     'Japan',
@@ -155,7 +178,7 @@ def get_data(url):
                     'Supranational',
                     'Net Derivatives',
                     'Cash',
-                    'Other',]
+                    'Other Locations',]
 
         asset_labels = sorted(asset_labels, key=lambda x: len(x), reverse=True)
         asset_values = {word: 0 for word in asset_labels}

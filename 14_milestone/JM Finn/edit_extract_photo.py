@@ -5,7 +5,7 @@ import fitz
 
 
 def extract_images_from_pdf(pdf_path, output_folder):
-    target_resolution = (1240, 954)
+    target_resolution = 600
     doc = fitz.open(pdf_path)
     
     for page_num in range(doc.page_count):
@@ -17,11 +17,11 @@ def extract_images_from_pdf(pdf_path, output_folder):
             image_bytes = base_image["image"]
             image = Image.open(BytesIO(image_bytes))
             
-            if image.size == target_resolution:
+            if image.height >= target_resolution:
                 image_filename = os.path.join(output_folder, f"{os.path.basename(pdf_path)}_page{page_num + 1}_img{img_index + 1}.png")
                 with open(image_filename, "wb") as image_file:
                     image_file.write(image_bytes)
-                    
+                            
     doc.close()
 
 

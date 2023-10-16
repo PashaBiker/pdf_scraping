@@ -65,8 +65,7 @@ def get_NA_num(image_path):
 
         # Post-processing: Ensure only numbers remain
         only_numbers = ''.join(filter(str.isdigit, extracted_text))
-        # print(only_numbers)
-        if len(only_numbers) == 3:
+        if len(only_numbers) >= 3:
             formatted_number = only_numbers[:2] + "." + only_numbers[2]
             print(formatted_number)
 
@@ -79,5 +78,5 @@ def get_NA_num(image_path):
 
 
 if __name__ == "__main__":
-    image_path = '14_milestone\JM Finn\JM Finn Images\JM Finn Cropped assets\crop1_CSI Income Portfolio.pdf_page1_img1.png'
+    image_path = '14_milestone/JM Finn/JM Images/asset_image.png'
     get_NA_num(image_path)

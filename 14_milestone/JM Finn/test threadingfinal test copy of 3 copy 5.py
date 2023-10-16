@@ -388,7 +388,7 @@ def get_assets(img_path,img_key_path):
                     for asset in assets if asset in unsorted_output}
 
     print(sorted_output)
-    
+
     sorted_output['Mkt Cap >£2bn'] = sorted_output.pop('Cap >')
     sorted_output['Mkt Cap < £2bn'] = sorted_output.pop('Cap <')
     sorted_output['Sovereign/Supernational'] = sorted_output.pop('Sovereign')

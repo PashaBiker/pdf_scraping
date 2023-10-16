@@ -273,6 +273,4 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"An error occurred in file {pdf}: {str(e)}")
 
-        # print('Portfolio Cost:', portfolio_cost + '\t' + pdf)
-
     print('\nDone!')

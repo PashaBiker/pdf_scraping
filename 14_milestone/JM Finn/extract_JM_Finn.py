@@ -22,6 +22,10 @@ import requests
 import xlwings as xw
 import threading
 
+out_path = '14_milestone\JM Finn\JM Images' 
+excel_file = '14_milestone\JM Finn\JM Finn and Co.xlsm'
+pdf_folder = '14_milestone\JM Finn\JM Finn PDFs' 
+
 def download_pdfs(spreadsheet):
     print('Downloading PDFs...')
     
@@ -99,7 +103,7 @@ def get_assets(img_path,img_key_path):
     cv2.drawContours(imgray, contours, -1, (0, 255, 0), 3)
 
     sorted_contours= sorted(contours, key=cv2.contourArea, reverse= True)
-    print('[INFO] Soriing contours')
+    print('[INFO] Sorting contours')
 
     def compute_centroid(contour):
         M = cv2.moments(contour)
@@ -140,11 +144,21 @@ def get_assets(img_path,img_key_path):
         for idx in group:
             cv2.drawContours(output, [contours[idx]], -1, color, 3)
 
-    def apply_ocr_to_grouped_contours(image, contours, groups):
-        output = image.copy()
-        group_data = []
+    # Split a list into N chunks
+    def split_into_chunks(lst, num):
+        avg = len(lst) / float(num)
+        out = []
+        last = 0.0
+        while last < len(lst):
+            out.append(lst[int(last):int(last + avg)])
+            last += avg
+        return out
 
-        for group in groups:
+    # Thread worker function
+    def thread_worker(chunk_of_groups, image, contours, output, group_data_list, lock):
+        reader = easyocr.Reader(['en'], gpu=False, verbose=False)
+        local_group_data = []
+        for group in chunk_of_groups:
             # Combine all contours in the group to get a single bounding rectangle
             combined_contours = np.vstack([contours[i] for i in group])
             x, y, w, h = cv2.boundingRect(combined_contours)
@@ -160,7 +174,6 @@ def get_assets(img_path,img_key_path):
             roi = thresh[y_start:y_end, x_start:x_end]
             scaled_roi = cv2.resize(roi, (w*5, h*5), interpolation=cv2.INTER_CUBIC)
 
-            reader = easyocr.Reader(['en'], gpu=False, verbose=False)
             result = reader.readtext(scaled_roi)
             text = result
             # Draw bounding rectangle and place OCR result on the image
@@ -194,12 +207,37 @@ def get_assets(img_path,img_key_path):
 
                 if cleaned_text:  # If the cleaned text is not empty
                     # print(text, "\n")
-                    group_data.append({"coordinates": (x, y, x + w, y + h), "text": cleaned_text})
+                    local_group_data.append({"coordinates": (x, y, x + w, y + h), "text": cleaned_text})
                     cv2.rectangle(output, (x, y), (x+w, y+h), (255, 0, 0), 2)
                     cv2.putText(output, cleaned_text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
             print('[INFO] Using OCR to get nums')
 
-        return output, group_data
+        # Using a lock to safely append local results to the shared list
+        lock.acquire()
+        group_data_list.extend(local_group_data)
+        lock.release()
+
+    def apply_ocr_to_grouped_contours(image, contours, groups):
+        output = image.copy()
+        group_data_list = []
+
+        num_threads = 8  # Choose based on your preference
+        group_chunks = split_into_chunks(groups, num_threads)
+
+        # Using a thread lock for safe appending to the shared list
+        lock = threading.Lock()
+        
+        threads = []
+        for i in range(num_threads):
+            t = threading.Thread(target=thread_worker, args=(group_chunks[i], image, contours, output, group_data_list, lock))
+            t.start()
+            threads.append(t)
+
+        # Wait for all threads to complete
+        for t in threads:
+            t.join()
+
+        return output, group_data_list
 
     # Apply OCR and visualize the result
     output_image, group_info = apply_ocr_to_grouped_contours(img, contours, groups)
@@ -388,10 +426,11 @@ def get_assets(img_path,img_key_path):
                     for asset in assets if asset in unsorted_output}
 
     print(sorted_output)
-    
+
     sorted_output['Mkt Cap >£2bn'] = sorted_output.pop('Cap >')
     sorted_output['Mkt Cap < £2bn'] = sorted_output.pop('Cap <')
-    sorted_output['Sovereign/Supernational'] = sorted_output.pop('Sovereign')
+    if 'Sovereign' in sorted_output:
+        sorted_output['Sovereign/Supernational'] = sorted_output.pop('Sovereign')
 
     return sorted_output
 
@@ -571,8 +610,9 @@ def additional_info(pdf):
             if 'Ongoing Charges' in line:
                 OCF = re.findall(r'\d+\.\d+', line)[0]
         found_line = False
+        
         for i, line in enumerate(text_2_page):
-            matches = re.findall(r"\d+\.\d+%", line)
+            matches = re.findall(r"\d+\.\d+", line)
             if len(matches) > 3 and not found_line:
                 years_matches = re.findall(r"(-?\d+\.\d+)", line)
 
@@ -582,11 +622,11 @@ def additional_info(pdf):
 
                 found_line = True
 
-        print(date)
-        print(OCF)
-        print("1yr:", _1yr)
-        print("3yr:", _3yr)
-        print("5yr:", _5yr)
+    print(date)
+    print(OCF)
+    print("1yr:", _1yr)
+    print("3yr:", _3yr)
+    print("5yr:", _5yr)
 
     return _1yr, _3yr, _5yr, OCF, date
 
@@ -678,10 +718,9 @@ def column_letter_from_index(index):
 
 
 if __name__ == "__main__":
-    out_path = '14_milestone\JM Finn\JM Images' 
-    excel_file = '14_milestone\JM Finn\JM Finn and Co.xlsm'
-    pdf_folder = '14_milestone\JM Finn\JM Finn PDFs' 
 
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
 
     pdf_folder = download_pdfs(excel_file) 
 
