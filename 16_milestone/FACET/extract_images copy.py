@@ -84,34 +84,32 @@ if __name__ == "__main__":
     # Create the EasyOCR reader
     reader = easyocr.Reader(['en'], gpu=False, verbose=False)
 
-    keys = []
-
     # Read the text from the image numpy array
     for image_p in img_np_list:
         # print(image_p)
         result = reader.readtext(image_p)
+        # for entry in result:
+        #     text = entry[1].replace('/', '').replace(',', '.').replace('..','.')
+        #     keys.append(text)
+
+        #     print(text.split('\n'))
+        # print(keys)
+        # lines = keys
+        keys = []
+
+        # Extract only the percentages from the result
         for entry in result:
-            text = entry[1].replace('/', '').replace(',', '.').replace('..','.')
-            keys.append(text)
-
+            text = entry[1].replace('/', '').replace(',', '.').replace('..', '.').replace('%', '').replace('|', '').strip()
             print(text.split('\n'))
+            # Check if text contains only digits (and optionally a dot)
+            if text.replace('.', '', 1).isdigit():
+                keys.append(float(text))
+
+        # Create a dictionary by associating each asset with the respective percentage
+        assets = ['Equities', 'Fixed Income', 'Property', 'Cash', 'Other']
+        result_dict = {asset: keys[i*2] for i, asset in enumerate(assets)}
+
         print(keys)
-        lines = keys
-        result = {}
-
-        assets = [
-            'Equities',
-            'Fixed Income',
-            'Property',
-            'Cash',
-            'Other',]
-
-        # For every third line (assuming the structure is consistent), extract the asset class and percentage
-        for i in range(0, len(lines), 3):
-            asset_class = lines[i].strip()
-            percentage = lines[i+1].strip('%').strip()  # Convert comma to dot and remove the percentage sign
-            result[asset_class] = float(percentage)
-
-        print(result)
+        print(result_dict)
             
     
