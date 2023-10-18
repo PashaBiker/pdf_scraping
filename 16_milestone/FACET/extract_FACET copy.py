@@ -18,9 +18,9 @@ from PIL import Image
 from io import BytesIO
 
 
-excel_file = 'FACET.xlsm'
-pdf_folder = 'FACET PDFs'
-output_image_folder="Cropped images"
+excel_file = '16_milestone\FACET\FACET.xlsm'
+pdf_folder = '16_milestone\FACET\FACET PDFs'
+output_image_folder="16_milestone\FACET\Cropped images"
 
 def download_pdfs(spreadsheet):
     print('Downloading PDFs...')
@@ -312,32 +312,32 @@ def write_to_sheet(one_month, one_year, three_years, five_years, assets, AMC, OC
                 cellc = sheet.range('C'+str(i+1))
                 if AMC is not None:
                     cellc.value = float(AMC)/100
-                    cellc.number_format = '0.00%'
+                    cellc.number_format = '0,00%'
                 
                 celld = sheet.range('D'+str(i+1))
                 if OCF is not None:
                     celld.value = float(OCF)/100
-                    celld.number_format = '0.00%'
+                    celld.number_format = '0,00%'
                 
                 celle = sheet.range('E'+str(i+1))
                 if one_month is not None:
                     celle.value = float(one_month)/100
-                    celle.number_format = '0.00%'
+                    celle.number_format = '0,00%'
                 
                 cellf = sheet.range('F'+str(i+1))
                 if one_year is not None:
                     cellf.value = float(one_year)/100
-                    cellf.number_format = '0.00%'
+                    cellf.number_format = '0,00%'
                 
                 cellg = sheet.range('G'+str(i+1))
                 if three_years is not None:
                     cellg.value = float(three_years)/100
-                    cellg.number_format = '0.00%'
+                    cellg.number_format = '0,00%'
                 
                 cellh = sheet.range('H'+str(i+1))
                 if five_years is not None:
                     cellh.value = float(five_years)/100
-                    cellh.number_format = '0.00%'
+                    cellh.number_format = '0,00%'
 
         wb.save()
 
@@ -369,7 +369,7 @@ def write_to_sheet(one_month, one_year, three_years, five_years, assets, AMC, OC
                     cell = sheet.range(
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(str(value).replace(',', '')) / 100
-                    cell.number_format = '0.00%'
+                    cell.number_format = '0,00%'
 
 
     except Exception as e:
@@ -400,7 +400,7 @@ if __name__ == '__main__':
 # TODO UNCOMENT FIRST
 # TODO UNCOMENT FIRST
 
-    pdf_folder = download_pdfs(excel_file) 
+    # pdf_folder = download_pdfs(excel_file) 
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 
