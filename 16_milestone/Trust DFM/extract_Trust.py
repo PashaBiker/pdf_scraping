@@ -98,7 +98,6 @@ def get_data(file):
 
         text = text.split('\n')
         print(text)
-        breakpoint()
         
         for line in text[:5]:
                 match = re.search(r'\d{2}\.\d{2}\.\d{4}', line)
