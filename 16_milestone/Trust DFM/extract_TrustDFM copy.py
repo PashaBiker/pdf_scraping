@@ -1,15 +1,24 @@
-
-
-
-
-
-
-
-
-import re
-
-from PyPDF2 import PdfReader
+import glob
+import PyPDF2
 import pdfplumber
+import xlwings as xw
+import requests
+import os
+import re
+import traceback
+# pip install PyMuPDF
+import fitz  # PyMuPDF
+import re
+import pdf2image
+from PIL import Image
+import pytesseract
+import os
+import threading
+from queue import Queue
+import hashlib
+
+excel_file = '16_milestone\Trust DFM\Trust DFM.xlsm'
+pdf_folder = '16_milestone\Trust DFM\Trust DFM PDFs'
 
 def get_data_addition(pdf):
     def extract_top_left_text(pdf_path):
@@ -135,14 +144,14 @@ def get_data(file):
         for i,line in enumerate(text):
             if 'Ongoing Costs' in line:
                 oc_match = re.search(r'(\d+\.\d+)', line)
-                ongoing_costs.append(oc_match.group(1))
+                ongoing_costs.append(float(oc_match.group(1))/100)
                 date.append(text[1])
             if "Time Period" in line:
                 # print(text[i+1])
                 values_line = text[i+1]
                 values = re.findall(r'(-?\d+\.\d+)%', values_line)
-                one_month.append(float(values[0]))
-                one_year.append(float(values[3]))
+                one_month.append(float(values[0])/100)
+                one_year.append(float(values[3])/100)
             
 
     print(filenames)
@@ -261,9 +270,9 @@ def get_data(file):
     assets_grouped_assets = get_data_addition(file)
     combined_list = merge_lists(assets_grouped_assets, grouped_assets)
     print(combined_list)
-
+    result2 = {}
     for i, filename  in enumerate(filenames):
-        result[i] = {
+        result2[filename] = {
             'Date': date[i],
             'Ongoing Costs*': ongoing_costs[i],
             '1yr': one_year[i],
@@ -279,8 +288,186 @@ def get_data(file):
             )
     # print(result)
     
+    return result2
+
+
+def download_worker(q, folder_name):
+    headers = {
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+        'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'none',
+        'sec-fetch-user': '?1',
+        'upgrade-insecure-requests': '1',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+    }
+
+    while not q.empty():
+        row_data = q.get()
+        link, filename = row_data["link"], row_data["filename"]
+
+        response = requests.get(link, headers=headers)
+        if not filename:
+            filename = link.split('/')[-1]
+
+        file_path = os.path.join(folder_name, filename)
+
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
+
+        print(f"PDF downloaded: {filename}")
+        q.task_done()
+
+def download_pdfs(spreadsheet):
+    print('Downloading PDFs...')
+
+    app = xw.App(visible=False)
+    wb = app.books.open(spreadsheet, update_links=False, read_only=False)
+    sheet = wb.sheets[1]
+
+    folder_name = pdf_folder
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
+    last_row = sheet.range('B' + str(sheet.cells.last_cell.row)).end('up').row
+
+    q = Queue(maxsize=0)
+    for row in range(3, last_row+1):
+        link = sheet.range(f'B{row}').value
+        filename = sheet.range(f'A{row}').value + '.pdf'
+        q.put({"link": link, "filename": filename})
+
+    num_threads = 4
+    for _ in range(num_threads):
+        worker_thread = threading.Thread(
+            target=download_worker, args=(q, folder_name))
+        worker_thread.start()
+
+    q.join()
+
+    wb.close()
+    app.quit()
+
+    print('All PDFs downloaded!')
+    return folder_name
+
+def write_to_sheet(data, excel_file):
+
+    try:
+        app = xw.App(visible=False)
+        wb = app.books.open(excel_file, update_links=False, read_only=False)
+        # breakpoint()
+        for filename, values in data.items():
+            print('Writing data of', filename)
+            # Find the row that matches filename
+            sheet = wb.sheets[2]
+
+            row = None
+            for cell in sheet.range('A:A'):
+                if cell.value and cell.value.strip() == filename.strip():
+                    row = cell.row
+                    break
+
+            if row is None:
+                print(f"Filename '{filename}' not found in the sheet.")
+                continue
+
+            for key in values:
+                if key == 'Assets':
+                    continue
+
+                # Find the matching column
+                column = None
+                for cell in sheet.range('1:1'):
+                    if cell.value and cell.value.strip() == key.strip():
+                        column = cell.column
+                        break
+
+                if column is None:
+                    print(f"Column '{key}' not found in the sheet.")
+                    continue
+
+                # Write the key's value to the cell at the intersection of the row and column
+                sheet.cells(row, column).value = values[key]
+
+            sheet = wb.sheets[3]
+
+            column_headings = sheet.range('A1').expand('right').value
+
+            for asset, value in values['Assets'].items():
+                if asset not in column_headings:
+                    sheet.range(
+                        f'{column_letter_from_index(len(column_headings)+1)}1').value = asset
+                    # Update the column_headings list after adding the new column
+                    column_headings = sheet.range('A1').expand('right').value
+
+            for asset, value in values['Assets'].items():
+                column_index = column_headings.index(asset) + 1
+                cell = sheet.range(
+                    f'{column_letter_from_index(column_index)}{row}')
+                cell.value = float(value.replace('%','')) / 100
+                cell.number_format = '0,00%'
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        traceback.print_exc()
+
+    finally:
+        wb.save()
+        wb.close()
+        app.quit()
+
+
+def column_letter_from_index(index):
+    result = ""
+    while index > 0:
+        index -= 1
+        remainder = index % 26
+        result = chr(65 + remainder) + result
+        index = index // 26
     return result
 
-if __name__ == "__main__":
-    file = '16_milestone\Trust DFM\Trust DFM PDFs\Flourish.pdf'
-    get_data(file)
+def calculate_sha256(file_path):
+    """Calculate the SHA256 hash of a file."""
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        # Read and update hash in chunks for large files
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+if __name__ == '__main__':
+
+    # pdf_folder = download_pdfs(excel_file)
+
+    pdfs = glob.glob(pdf_folder + '/*.pdf')
+    # Calculate hashes for all PDFs
+    hashes = {pdf: calculate_sha256(pdf) for pdf in pdfs}
+
+    # Group PDFs by their hashes
+    grouped_pdfs = {}
+    for pdf, pdf_hash in hashes.items():
+        if pdf_hash not in grouped_pdfs:
+            grouped_pdfs[pdf_hash] = []
+        grouped_pdfs[pdf_hash].append(pdf)
+
+    # From each group of identical PDFs, remove all but one
+    for pdf_group in grouped_pdfs.values():
+        for pdf in pdf_group[1:]:
+            os.remove(pdf)
+
+    for file in pdfs:
+
+        try:
+            data = get_data(file)
+            write_to_sheet(data, excel_file)
+
+        except Exception as e:
+            print(f"Error while processing {file}: {str(e)}")
+            traceback.print_exc()
+
+    print('\nDone!')
