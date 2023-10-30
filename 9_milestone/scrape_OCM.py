@@ -14,7 +14,7 @@ def scrape_links(file_urls):
 
     for key, url in file_urls.items():
         print('Scraping PDF link of ' + key + '...')
-        if key in pdf_links:
+        if key in link_dict:
             print('PDF link of ' + key + ' already exists.')
             continue
 
@@ -33,26 +33,46 @@ def scrape_links(file_urls):
                     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
                 }
 
-                response = session.get(url, headers=headers)
+                response = requests.get(url, headers=headers)
                 request_content = response.content
                 soup = BeautifulSoup(request_content, 'html.parser')
-                # print(soup)
-                # breakpoint()
-                # Find all the div elements with the class 'e-con-full e-flex e-con e-child'
-                div_elements = soup.select('div.e-con-full.e-flex.e-con.e-child')
+                pdf_links = []
+                # Find the div with the class 'facetwp-template'
+                facetwp_div = soup.find('div', class_='facetwp-template')
+                for a_tag in facetwp_div.find_all('a', class_='port-item'):
+                    # print(a_tag)
+                    title_tag = a_tag.find('span', class_='port-title').text
+                    title = title_tag.strip()  # e.g., 'OBI Active 5'
+                    # print(title_tag)
+                    content_url = a_tag['href']
+                    # print(content_url)
+                    pdf_links.append(f"{title}:{content_url}")
+                # print(pdf_links)
+                
+                def extract_date_from_url(url):
+                    # Извлекаем дату из URL
+                    match = re.search(r"(\d{4}/\d{2})", url)
+                    if match:
+                        date_str = match.group(1)
+                        return datetime.strptime(date_str, "%Y/%m")
+                    return None
 
-                for div in div_elements:
-                    # Search for the h2 tag within each div to get the title
-                    h2_tag = div.find('h2', class_='elementor-heading-title elementor-size-default')
-                    if h2_tag:
-                        title = h2_tag.text.strip()
-                        # Search for the anchor tag with the relevant class to get the PDF link
-                        a_tag = div.find('a', class_='elementor-button elementor-button-link elementor-size-sm')
-                        if a_tag:
-                            content_url = a_tag['href']
-                            pdf_links[title] = content_url
+                # Извлекаем даты из каждой ссылки
+                dates_and_links = [(extract_date_from_url(link), link) for link in pdf_links]
 
-                print(pdf_links)
+                # Убираем None значения
+                dates_and_links = [dl for dl in dates_and_links if dl[0] is not None]
+
+                # Находим самую свежую дату
+                latest_date = max(dates_and_links, key=lambda x: x[0])[0]
+
+                # Возвращаем все ссылки с самой свежей датой
+                latest_links = [link for date, link in dates_and_links if date == latest_date]
+
+                # print(latest_links)
+                for item in latest_links:
+                    key, value = item.split(":", 1)  # разделяем по первому вхождению ':'
+                    link_dict[key] = value
 
                 # Print the dictionary
                 # for key, value in pdf_links.items():
@@ -62,8 +82,8 @@ def scrape_links(file_urls):
             print("Error fetching the URL:", e)
         except Exception as e:
             print("An error occurred:", e)
-        print(pdf_links)
-    return pdf_links
+        print(link_dict)
+    return link_dict
 
 
 def get_urls(spreadsheet):
@@ -112,12 +132,12 @@ def write_to_sheet(pdf_link, spreadsheet):
         wb.close()
 
 
-    
+
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    # excel_file = '12_milestone\Tideway Discretionary Fund Management Services\Tideway Discretionary Fund Management Services.xlsm'
-    excel_file = 'Tideway Discretionary Fund Management Services.xlsm'
+    # excel_file = 'OCM Asset Management.xlsm'
+    excel_file = '9_milestone\OCM Asset Management.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)

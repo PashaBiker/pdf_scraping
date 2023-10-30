@@ -1,6 +1,5 @@
 import os
 import traceback
-import PyPDF2
 import requests
 import xlwings as xw
 import pdfplumber
@@ -8,13 +7,18 @@ from PyPDF2 import PdfReader
 import re
 import glob
 import time
-import PyPDF2
-import pdfplumber
-import io
-excel_file = 'Titan Asset Management.xlsm'
-excel_file = '12_milestone\Titan Asset Management\Titan Asset Management.xlsm'
-pdf_folder = 'Titan PDFs'
-pdf_folder = '12_milestone\Titan Asset Management\Titan PDFs'
+import pytesseract
+from pdf2image import convert_from_path
+from PIL import ImageEnhance
+from concurrent.futures import ThreadPoolExecutor
+import threading
+from fuzzywuzzy import fuzz
+
+excel_file = 'OCM Asset Management.xlsm'
+pdf_folder = 'OCM PDFs'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+poppler_path=r'E:\git\Scraping\OCM\poppler-23.07.0\Library\bin'
+
 
 def download_pdfs(spreadsheet):
     print('Downloading PDFs...')
@@ -74,6 +78,33 @@ def download_pdfs(spreadsheet):
     print('All PDFs downloaded!')
     return folder_name
 
+def ocr_from_pdf(pdf_path):
+    # Конвертируем PDF в набор изображений
+    images = convert_from_path(pdf_path, poppler_path=poppler_path, first_page=1, last_page=1)
+    
+    all_text = ""
+
+    custom_config = r'--oem 3 --psm 6'
+
+    for i, image in enumerate(images):
+        # Если это первая страница, обрабатываем только её нижнюю левую часть
+        if i == 0:
+            # Вычисляем половину высоты и половину ширины изображения
+            mid_height = int(image.height * 0.5)
+            mid_width = int(image.width * 0.5)
+
+            # Обрезаем изображение с середины до конца по высоте и с начала до середины по ширине
+            cropped_image = image.crop((0, mid_height, mid_width, image.height))
+
+            # Применяем Tesseract к обрезанному изображению
+            picture_text = pytesseract.image_to_string(cropped_image, config=custom_config, lang='eng')
+            all_text += picture_text + '\n'
+        else:
+            # Применяем Tesseract ко всему изображению для остальных страниц
+            text = pytesseract.image_to_string(image, config=custom_config, lang='eng')
+            all_text += text + '\n'
+        
+    return all_text
 
 def get_data(file):
 
@@ -86,32 +117,43 @@ def get_data(file):
                 text = page.extract_text()
                 text = text.split('\n')
                 # print(text)
+                
+            
+                for i, line in enumerate(text):
 
-                for i in range(len(text) - 1):
-                    line = text[i]
+                    if "Ongoing Strategy Charge" in line:
+                        for j in range(i+1, len(text)):
+                            match = re.search(r'(\d+\.\d+)%', text[j])
+                            if match:
+                                OCF = match.group(1)
+                                date = text[1]  
+                                # print(OCF)
+                                break
 
-                    if 'Discretionary Management Fee' in line:
-                        AMC_Number = re.findall(r'\d+\.?\d*', line)
-                        AMC = AMC_Number[0]
+                    def extract_numbers(line):
+                        elements = line.split()  # Разбиваем строку по пробелам
 
-                    if 'Ongoing Charges Figure' in line:
-                        OCF_Number = re.findall(r'\d+\.?\d*', line)
-                        OCF = OCF_Number[0]
-                        date_match = re.search(r'(\d{2}/\d{2}/\d{4})', text[2])
-                        if date_match:
-                            extracted_date = date_match.group(1)
-                            date = extracted_date.replace("/", ".")
-                        # print(line)
+                        numbers = []
+                        for elem in elements:
+                            # Если элемент является числом
+                            if re.match(r'[-+]?\d+\.\d+', elem.replace('%', '')):  # Удаление символа '%' перед проверкой
+                                numbers.append(float(elem.replace('%', '')))
+                            # Если элемент является прочерком
+                            elif elem == "-":
+                                numbers.append(0.0)
+                        
+                        return numbers
 
-                    numbers = re.findall(r'[-+]?\d+\.\d+', line)
-                    if len(numbers) >= 4 and not first_line_found:
+                    # Далее в вашем коде
+                    numbers = extract_numbers(line)
+                    if len(numbers) >= 3 and not first_line_found:
+                        print(line)
                         one_month = numbers[0]
-                        one_year = numbers[2]
+                        one_year = numbers[3] if len(numbers) > 3 else None  # Инициализация one_year
                         first_line_found = True
                         
-                print(date)
-                print(AMC)
-                print(OCF)
+                # print(date)
+                # print(OCF)
                 print(one_month)
                 print(one_year)
 
@@ -120,44 +162,57 @@ def get_data(file):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
 
-    asset_labels = ['Stock',	
-                    'Bond',	
-                    'Cash',	
-                    'Other',]
+    asset_labels = ['Money Market',
+                    'UK Fixed Interest',
+                    'Global Fixed Interest',
+                    'UK Gilts',
+                    'Other Non-Equity',
+                    'Property',
+                    'Commodity & Energy',
+                    'UK Equity',
+                    'North American Equity',
+                    'European Equity',
+                    'Asian Equity',
+                    'Other International Equity',
+]
 
     asset_labels = sorted(asset_labels, key=lambda x: len(x), reverse=True)
 
     with pdfplumber.open(file) as pdf:
-        page = pdf.pages[0]
-        # Извлечение только левой половины страницы
-        # left_half = page.crop((0, 0, page.width / 2, page.height))
-        right_quarter = page.crop((page.width * 3/4, 0, page.width, page.height))
-        text = right_quarter.extract_text()  # Извлекаем текст с этой части страницы
-        # print(page_text)
-        
-        # Разделяем текст на строки и добавляем их в список
-        lines = text.split('\n')
-        print(lines)
-        # Initialize the asset_values dictionary
-        asset_values = {word: 0 for word in asset_labels}
-        lines = [re.sub(r'(\d) \.', r'\1.', line) for line in lines]
-        total = 0.0
-        for line in lines:
-            for label in asset_labels:
-                if label in line:
-                    modified_line = line.replace(label, '')  # удаляем метку, чтобы избежать конфликтов
-                    value = re.search(r'(\d+\.\d+)', modified_line)
-                    if value:
-                        asset_values[label] = float(value.group(1))
-                        asset_labels.remove(label)  # Удаляем метку, чтобы она больше не обрабатывалась
-                        total += float(value.group(1))
-                        break  # Выходим из внутреннего цикла, т.к. уже нашли значение
+        picture = ocr_from_pdf(file)
+        picture_lines = picture.split('\n')
+        start_index = next((i for i, s in enumerate(picture_lines) if "Asset Allocation" in s), None)
 
-        print(asset_values)
-        print(total)
-        print('\n'*2)
- 
-    return one_year, one_month, asset_values,AMC,OCF, date
+        if start_index is not None:
+            filtered_data = picture_lines[start_index:]
+        # print(filtered_data)
+        # Initialize the asset_values dictionary with zeros
+        asset_values = {word: 0 for word in asset_labels}
+
+        corrections = {
+            "aits": "gilts",
+            "cits": "gilts",
+            "aitts": "gilts",
+            # добавьте другие известные коррекции здесь
+        }
+
+        for line in filtered_data:
+            # Применить коррекции
+            for wrong, correct in corrections.items():
+                line = line.replace(wrong, correct)
+
+            line_lower = line.lower()
+            for word in asset_labels:
+                if fuzz.partial_ratio(word.lower(), line_lower) > 80:
+                    numbers = re.findall(r'\b(\d+\.?\d*)%', line)
+                    if numbers:
+                        number = float(numbers[-1])
+                        asset_values[word] = number
+                        break
+        total = sum(asset_values.values())
+        # print(asset_values)
+        # print(total)
+    return one_year,one_month, asset_values, OCF,date
     # return asset_values, date
 
 
@@ -170,7 +225,7 @@ def clean_text(text):
     return cleaned_text
 
 
-def write_to_sheet(one_year, one_month, assets, AMC, OCF, spreadsheet, filename, date):
+def write_to_sheet(one_year, one_month, assets, OCF, spreadsheet, filename, date):
 
     try:
         app = xw.App(visible=False)
@@ -189,20 +244,16 @@ def write_to_sheet(one_year, one_month, assets, AMC, OCF, spreadsheet, filename,
                 cellb.value = date
 
                 cellc = sheet.range('C'+str(i+1))
-                cellc.value = float(AMC)/100
+                cellc.value = float(OCF)/100
                 cellc.number_format = '0.00%'
 
                 celld = sheet.range('D'+str(i+1))
-                celld.value = float(OCF)/100
+                celld.value = float(one_year)/100
                 celld.number_format = '0.00%'
 
                 celle = sheet.range('E'+str(i+1))
-                celle.value = float(one_year)/100
+                celle.value = float(one_month)/100
                 celle.number_format = '0.00%'
-
-                cellf = sheet.range('F'+str(i+1))
-                cellf.value = float(one_month)/100
-                cellf.number_format = '0.00%'
 
         wb.save()
 
@@ -265,14 +316,16 @@ if __name__ == '__main__':
 # TODO UNCOMENT FIRST
 # TODO UNCOMENT FIRST
 
-    pdf_folder = download_pdfs(excel_file) 
+    # pdf_folder = download_pdfs(excel_file) 
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 
     for pdf in pdfs:
         try:
-            one_year,one_month, assets, AMC, OCF, date = get_data(pdf)
-            write_to_sheet(one_year,one_month, assets, AMC, OCF, excel_file,pdf.split('\\')[-1].split('.')[0], date)
+            one_year,one_month, assets, OCF, date = get_data(pdf)
+            # one_year , asset_values, date = get_data(pdf)
+            write_to_sheet(one_year,one_month, assets, OCF, excel_file,pdf.split('\\')[-1].split('.')[0], date)
+            # write_to_sheet(one_year , asset_values, excel_file,pdf.split('\\')[-1].split('.')[0], date)
 
         except Exception as e:
             print(f"An error occurred in file {pdf}: {str(e)}")

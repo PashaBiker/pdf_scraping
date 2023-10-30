@@ -3,7 +3,6 @@ import traceback
 import PyPDF2
 import requests
 import xlwings as xw
-import pdfplumber
 from PyPDF2 import PdfReader
 import re
 import glob
@@ -11,10 +10,11 @@ import time
 import PyPDF2
 import pdfplumber
 import io
-excel_file = 'Titan Asset Management.xlsm'
-excel_file = '12_milestone\Titan Asset Management\Titan Asset Management.xlsm'
-pdf_folder = 'Titan PDFs'
-pdf_folder = '12_milestone\Titan Asset Management\Titan PDFs'
+
+my = '14_milestone\London\\'
+
+excel_file = my+'London and Capital Asset Management.xlsm'
+pdf_folder = my+'London PDFs'
 
 def download_pdfs(spreadsheet):
     print('Downloading PDFs...')
@@ -78,86 +78,151 @@ def download_pdfs(spreadsheet):
 def get_data(file):
 
     date = ''
-
+    AMC = None
+    first_line_found = False
+    one_year = None
+    one_month = None
     try:
         with pdfplumber.open(file) as pdf:
             first_line_found = False
+            first_AMC_found = False
             for page in pdf.pages:
                 text = page.extract_text()
                 text = text.split('\n')
                 # print(text)
 
-                for i in range(len(text) - 1):
-                    line = text[i]
+                for line in text:
 
-                    if 'Discretionary Management Fee' in line:
-                        AMC_Number = re.findall(r'\d+\.?\d*', line)
-                        AMC = AMC_Number[0]
-
-                    if 'Ongoing Charges Figure' in line:
-                        OCF_Number = re.findall(r'\d+\.?\d*', line)
-                        OCF = OCF_Number[0]
-                        date_match = re.search(r'(\d{2}/\d{2}/\d{4})', text[2])
-                        if date_match:
-                            extracted_date = date_match.group(1)
-                            date = extracted_date.replace("/", ".")
+                    if 'as at' in line:
                         # print(line)
+                        date_match = re.search(r'(\d{1,2}\s\w+\s\d{4})', line)
+                        if date_match:
+                            date = date_match.group(1)
 
-                    numbers = re.findall(r'[-+]?\d+\.\d+', line)
-                    if len(numbers) >= 4 and not first_line_found:
-                        one_month = numbers[0]
-                        one_year = numbers[2]
+                    if 'Class B GBP' in line:
+                        # print(line)
+                        AMC_number = re.findall(r'\d+\.?\d*', line)
+                        AMC = AMC_number[1]
+
+                    if 'DISCRETE ANNUAL PERFORMANCE' in line:
                         first_line_found = True
-                        
-                print(date)
-                print(AMC)
-                print(OCF)
-                print(one_month)
-                print(one_year)
+                        continue
 
-                break
+                    if first_line_found:
+                        # Проверка на отсутствие даты в строке
+                        if not re.search(r'\d+\.\d+\.\d+', line):
+                            # Поиск чисел с десятичной точкой
+                            fixed_line = line.replace('−','-')
+                            numbers = re.findall(r'[-+]?\d+\.\d+', fixed_line)
+                            if len(numbers) >= 4:
+                                if one_year is None:
+                                    one_year = numbers[0]
+                                elif one_month is None:
+                                    one_month = numbers[0]
+
+            # print(date)
+            # print(AMC)
+            # print(one_year)
+            # print(one_month)
+
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
 
-    asset_labels = ['Stock',	
-                    'Bond',	
-                    'Cash',	
-                    'Other',]
+    asset_labels = ['Equities',
+                    'Fixed Income',
+                    'Diversifiers',
+
+                    'Global STAR Equities',
+                    'North American',
+                    'Europe ex UK',
+                    'UK',
+                    'Equity Themes',
+                    'Emerging Markets',
+
+                    'Government & Supranational',
+
+                    'Corporate Senior',
+                    'Corporate Subordinated',
+
+                    'Financials Senior',
+                    'Financials Subordinated',
+                    'Cash/derivatives',
+
+                    'Alternative Funds',
+                    'Cash',
+                    'Gold',
+                    'Commodities',]
 
     asset_labels = sorted(asset_labels, key=lambda x: len(x), reverse=True)
 
     with pdfplumber.open(file) as pdf:
-        page = pdf.pages[0]
-        # Извлечение только левой половины страницы
-        # left_half = page.crop((0, 0, page.width / 2, page.height))
-        right_quarter = page.crop((page.width * 3/4, 0, page.width, page.height))
-        text = right_quarter.extract_text()  # Извлекаем текст с этой части страницы
-        # print(page_text)
-        
-        # Разделяем текст на строки и добавляем их в список
-        lines = text.split('\n')
+        for i, page in enumerate(pdf.pages):
+            if i == 0:  # Если это первая страница
+                # Обрезать верхнюю половину по высоте и 62.5% левой части по ширине
+                right_bottom_quarter = page.crop((page.width * 0.625, page.height / 2, page.width, page.height))
+                text = right_bottom_quarter.extract_text()
+                
+                # Разделяем текст на строки и добавляем их в список
+                lines = text.split('\n')
+
+            elif i == 1:  # Если это вторая страница
+                # Обрезать 37.5% левой стороны страницы
+                right_part = page.crop((page.width * 0.375, 0, page.width, page.height))
+                text = right_part.extract_text()
+                
+                # Разделяем текст на строки и добавляем их в список
+                lines.extend(text.split('\n'))
+            else:
+                # Если страниц больше двух, завершите цикл
+                break
         print(lines)
         # Initialize the asset_values dictionary
         asset_values = {word: 0 for word in asset_labels}
-        lines = [re.sub(r'(\d) \.', r'\1.', line) for line in lines]
+        lines_to_remove = []
         total = 0.0
         for line in lines:
+            matched = False
+            # Для каждой метки актива в asset_labels проверяем, содержится ли она в строке
             for label in asset_labels:
                 if label in line:
-                    modified_line = line.replace(label, '')  # удаляем метку, чтобы избежать конфликтов
-                    value = re.search(r'(\d+\.\d+)', modified_line)
+                    # Если содержится, то используем регулярное выражение, чтобы извлечь числовое значение
+                    value = re.search(r'(\d+\.\d+)', line.replace(label, ''))  # удаляем метку, чтобы избежать конфликтов
                     if value:
                         asset_values[label] = float(value.group(1))
-                        asset_labels.remove(label)  # Удаляем метку, чтобы она больше не обрабатывалась
                         total += float(value.group(1))
-                        break  # Выходим из внутреннего цикла, т.к. уже нашли значение
+                        matched = True
+                        lines_to_remove.append(line)
+                        break
+            if matched:
+                asset_labels.remove(label)
+        
+        # Удаляем обработанные строки
+        for line in lines_to_remove:
+            lines.remove(line)
+        categories = ["Corporate", "Financials"]
+        current_category = None
 
+        for i, line in enumerate(lines):
+            for category in categories:
+                if category in line:
+                    current_category = category
+
+            if "Senior" in line:
+                value = re.search(r'(\d+\.\d+)', line)
+                if value:
+                    key = f"{current_category} Senior"
+                    asset_values[key] = float(value.group(1))
+
+            if "Subordinated" in line:
+                value = re.search(r'(\d+\.\d+)', line)
+                if value:
+                    key = f"{current_category} Subordinated"
+                    asset_values[key] = float(value.group(1))    
         print(asset_values)
         print(total)
-        print('\n'*2)
  
-    return one_year, one_month, asset_values,AMC,OCF, date
+    return one_year,one_month, asset_values, AMC, date
     # return asset_values, date
 
 
@@ -170,7 +235,7 @@ def clean_text(text):
     return cleaned_text
 
 
-def write_to_sheet(one_year, one_month, assets, AMC, OCF, spreadsheet, filename, date):
+def write_to_sheet(one_year,one_month, assets, AMC, spreadsheet, filename, date):
 
     try:
         app = xw.App(visible=False)
@@ -190,19 +255,15 @@ def write_to_sheet(one_year, one_month, assets, AMC, OCF, spreadsheet, filename,
 
                 cellc = sheet.range('C'+str(i+1))
                 cellc.value = float(AMC)/100
-                cellc.number_format = '0.00%'
+                cellc.number_format = '0,00%'
 
                 celld = sheet.range('D'+str(i+1))
-                celld.value = float(OCF)/100
-                celld.number_format = '0.00%'
+                celld.value = float(one_year)/100
+                celld.number_format = '0,00%'
 
                 celle = sheet.range('E'+str(i+1))
-                celle.value = float(one_year)/100
-                celle.number_format = '0.00%'
-
-                cellf = sheet.range('F'+str(i+1))
-                cellf.value = float(one_month)/100
-                cellf.number_format = '0.00%'
+                celle.value = float(one_month)/100
+                celle.number_format = '0,00%'
 
         wb.save()
 
@@ -234,7 +295,7 @@ def write_to_sheet(one_year, one_month, assets, AMC, OCF, spreadsheet, filename,
                     cell = sheet.range(
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(str(value).replace(',', '')) / 100
-                    cell.number_format = '0.00%'
+                    cell.number_format = '0,00%'
 
 
     except Exception as e:
@@ -271,8 +332,8 @@ if __name__ == '__main__':
 
     for pdf in pdfs:
         try:
-            one_year,one_month, assets, AMC, OCF, date = get_data(pdf)
-            write_to_sheet(one_year,one_month, assets, AMC, OCF, excel_file,pdf.split('\\')[-1].split('.')[0], date)
+            one_year,one_month, assets, AMC, date = get_data(pdf)
+            write_to_sheet(one_year,one_month, assets, AMC, excel_file,pdf.split('\\')[-1].split('.')[0], date)
 
         except Exception as e:
             print(f"An error occurred in file {pdf}: {str(e)}")
