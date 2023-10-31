@@ -6,7 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from concurrent.futures import ThreadPoolExecutor
 
-filename = "tests\Wayfinder\output_list.json"  # filename stored in a variable
+filename = "tests\Wayfinder copy\output_comoanies_list.json"  # filename stored in a variable
 
 # Read the data from a file
 with open(filename, 'r') as file:
@@ -53,3 +53,5 @@ with ThreadPoolExecutor(max_workers=15) as executor:
     executor.map(process_item, data)
 
 print(json.dumps(data, indent=4))
+with open('final_output_list.json', 'w') as file:
+    json.dump(data, file, indent=4)

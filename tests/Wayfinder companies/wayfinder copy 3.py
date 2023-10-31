@@ -1,18 +1,20 @@
 from bs4 import BeautifulSoup
+from requests_html import HTMLSession
 import json
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from concurrent.futures import ThreadPoolExecutor
 
-filename = "tests\Wayfinder\output_list.json"  # filename stored in a variable
+
+filename = "output_list.json"  # filename stored in a variable
 
 # Read the data from a file
 with open(filename, 'r') as file:
     data = json.load(file)
 
-def process_item(item):
+session = HTMLSession()
+for item in data:
     url = item['find_out_more_link']
     driver = webdriver.Chrome()
 
@@ -26,6 +28,7 @@ def process_item(item):
     soup = BeautifulSoup(html_source, 'html.parser')
 
     address_div = soup.find('div', class_='wayfinderAddress')
+
     if address_div:
         contents = address_div.contents
         company_name = contents[0].text if contents[0].name == 'b' else None
@@ -47,9 +50,5 @@ def process_item(item):
         item['email'] = email
 
     driver.close()
-
-# Maximum of 10 threads in the pool. You can adjust based on your system's capacity.
-with ThreadPoolExecutor(max_workers=15) as executor:
-    executor.map(process_item, data)
 
 print(json.dumps(data, indent=4))
