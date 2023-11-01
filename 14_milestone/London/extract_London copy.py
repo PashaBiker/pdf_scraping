@@ -111,20 +111,19 @@ def get_data(file):
                     if first_line_found:
                         # Проверка на отсутствие даты в строке
                         if not re.search(r'\d+\.\d+\.\d+', line):
-                            # Поиск чисел с десятичной точкой
-                            fixed_line = line.replace('−','-')
-                            numbers = re.findall(r'[-+]?\d+\.\d+', fixed_line)
+                            # Updated the regex pattern
+                            numbers = re.findall(r'[-+]?\d+\.\d+', line)
                             if len(numbers) >= 4:
+                                # print(numbers)
+                                # print(line)
                                 if one_year is None:
-                                    one_year = numbers[0]
+                                    one_year = line.split()[1].replace('‑','-')
                                 elif one_month is None:
-                                    one_month = numbers[0]
-
-            # print(date)
-            # print(AMC)
-            # print(one_year)
-            # print(one_month)
-
+                                    one_month = line.split()[1].replace('‑','-')
+        # print(date)
+        # print(AMC)
+        # print(one_year)
+        # print(one_month)
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")

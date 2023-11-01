@@ -36,25 +36,24 @@ def scrape_links(file_urls):
                 response = session.get(url, headers=headers)
                 request_content = response.content
                 soup = BeautifulSoup(request_content, 'html.parser')
-                pdf_links = {}
+                # pdf_links = {}
 
-                # Найдите все элементы <li> с классом 'card-wrapper'
-                # Найдите все элементы <span> с классом 'btn-container'
-                div_elements = soup.find_all('div', class_='eael-circle-content')
+                table = soup.find('table', class_='bdt-static-table')
 
-                for div in div_elements:
-                    # Ищем тег <h2> с классом 'acumen-portfolio' для названия
-                    h2_tag = div.find('h2', class_='acumen-portfolio')
+                # Initialize an empty list to store the results
+                # results = []
+
+                # Iterate through each row in the table body
+                for row in table.find_all('tr'):
+                    # Find the cell that contains the name
+                    name_cell = row.find('div', class_='bdt-static-body-row-cell-text')
                     
-                    if h2_tag:
-                        title = h2_tag.text.strip()
-                        
-                        # Теперь ищем тег <a> для текста "Fact Sheet"
-                        fact_sheet_link = div.find('a', href=True, string=lambda x: "Fact Sheet" in x)
-                        
-                        if fact_sheet_link:
-                            content_url = fact_sheet_link['href']
-                            pdf_links[title] = content_url
+                    # Find the cell that contains the URL
+                    url_cell = row.find('a', class_='prosp-down')
+                    
+                    # If both name and URL exist in the row, append to the results list
+                    if name_cell and url_cell:
+                        pdf_links[name_cell.text.strip()]= url_cell['href']
 
                 print(pdf_links)
                 # Print the dictionary
@@ -119,8 +118,8 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
+    # excel_file = '12_milestone\Titan Asset Management\Titan Asset Management.xlsm'
     excel_file = 'Titan Asset Management.xlsm'
-    excel_file = '12_milestone\Titan Asset Management\Titan Asset Management.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)

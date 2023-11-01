@@ -190,19 +190,19 @@ def write_to_sheet(one_year, one_month, assets, AMC, OCF, spreadsheet, filename,
 
                 cellc = sheet.range('C'+str(i+1))
                 cellc.value = float(AMC)/100
-                cellc.number_format = '0.00%'
+                cellc.number_format = '0,00%'
 
                 celld = sheet.range('D'+str(i+1))
                 celld.value = float(OCF)/100
-                celld.number_format = '0.00%'
+                celld.number_format = '0,00%'
 
                 celle = sheet.range('E'+str(i+1))
                 celle.value = float(one_year)/100
-                celle.number_format = '0.00%'
+                celle.number_format = '0,00%'
 
                 cellf = sheet.range('F'+str(i+1))
                 cellf.value = float(one_month)/100
-                cellf.number_format = '0.00%'
+                cellf.number_format = '0,00%'
 
         wb.save()
 
@@ -234,7 +234,7 @@ def write_to_sheet(one_year, one_month, assets, AMC, OCF, spreadsheet, filename,
                     cell = sheet.range(
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(str(value).replace(',', '')) / 100
-                    cell.number_format = '0.00%'
+                    cell.number_format = '0,00%'
 
 
     except Exception as e:
