@@ -123,8 +123,6 @@ def get_data(file):
     ongoing_costs = []
     one_month = []
     one_year = []
-    three_years = []
-    five_years = []
 
     with pdfplumber.open(file) as pdf:
         text = ''
@@ -151,30 +149,16 @@ def get_data(file):
             if "Time Period" in line:
                 # print(text[i+1])
                 values_line = text[i+1]
-                values = [match[0] for match in re.findall(r'(-?\d+(\.\d+)?)%', values_line)]
-                print(values)
+                values = re.findall(r'(-?\d+\.\d+)%', values_line)
                 one_month.append(float(values[0])/100)
                 one_year.append(float(values[3])/100)
-            if '5yr' in line:
-                values_line = text[i+1]
-                values = [match[0] for match in re.findall(r'(-?\d+(\.\d+)?)%', values_line)]
-                print(values_line)
-                if len(values) >= 6:
-                    three_years.append((float(values[4])/100))
-                    five_years.append((float(values[5])/100))
-                else:
-                    print(f"Error in file {filename}: Expected at least 6 matches but found {len(values)}")
-                    three_years.append(None)  # or a default value of your choice
-                    five_years.append(None)  # or a default value of your choice
             
 
-    # print(filenames)
-    # print(date)
-    # print(ongoing_costs)
-    # print(one_month)
-    # print(one_year)
-    # print(three_years)
-    # print(five_years)
+    print(filenames)
+    print(date)
+    print(ongoing_costs)
+    print(one_month)
+    print(one_year)
 
     unsorted_categories = [
         'Global Equities',
@@ -261,7 +245,7 @@ def get_data(file):
         assets = dict(zip(keys, values))
         grouped_assets.append(assets)
 
-    # print(grouped_assets)
+    print(grouped_assets)
 
 
     def merge_lists(list1, list2):
@@ -285,24 +269,20 @@ def get_data(file):
     
     assets_grouped_assets = get_data_addition(file)
     combined_list = merge_lists(assets_grouped_assets, grouped_assets)
-    # print(combined_list)
+    print(combined_list)
     result2 = {}
-    for i, filename in enumerate(filenames):
+    for i, filename  in enumerate(filenames):
         result2[filename] = {
-            'Date': date[i] if i < len(date) else None,
-            'Ongoing Costs*': ongoing_costs[i] if i < len(ongoing_costs) else None,
-            '1yr': one_year[i] if i < len(one_year) else None,
-            '1m': one_month[i] if i < len(one_month) else None,
-            '3yr': three_years[i] if i < len(three_years) else None,
-            '5yr': five_years[i] if i < len(five_years) else None,
-            'Assets': combined_list[i] if i < len(combined_list) else None
+            'Date': date[i],
+            'Ongoing Costs*': ongoing_costs[i],
+            '1yr': one_year[i],
+            '1m': one_month[i],
+            'Assets': combined_list[i]
         }
         print(
             'Date', date[i], "\n",
             'One month', one_month[i],"\n",
             '12 months', one_year[i],"\n",
-            # '3yr', three_years[i],"\n",
-            # '5yr', five_years[i],"\n",
             'Ongoing Costs', ongoing_costs[i],"\n",
             'Assets', combined_list[i],"\n",
             )
@@ -430,7 +410,7 @@ def write_to_sheet(data, excel_file):
                 cell = sheet.range(
                     f'{column_letter_from_index(column_index)}{row}')
                 cell.value = float(value.replace('%','')) / 100
-                cell.number_format = '0,00%'
+                cell.number_format = '0.00%'
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
@@ -452,7 +432,6 @@ def column_letter_from_index(index):
     return result
 
 def calculate_sha256(file_path):
-    """Calculate the SHA256 hash of a file."""
     sha256_hash = hashlib.sha256()
     with open(file_path, "rb") as f:
         # Read and update hash in chunks for large files
@@ -475,14 +454,12 @@ if __name__ == '__main__':
             grouped_pdfs[pdf_hash] = []
         grouped_pdfs[pdf_hash].append(pdf)
 
-    # From each group of identical PDFs, remove all but one
+    # From each group of identical PDFs, remove all but one stay
     for pdf_group in grouped_pdfs.values():
         for pdf in pdf_group[1:]:
             os.remove(pdf)
 
-    new_pdfs = glob.glob(pdf_folder + '/*.pdf')
-
-    for file in new_pdfs:
+    for file in pdfs:
 
         try:
             data = get_data(file)
