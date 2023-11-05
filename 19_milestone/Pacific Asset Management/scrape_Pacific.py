@@ -39,32 +39,45 @@ def scrape_links(file_urls):
 
                 response = requests.get(url, headers=headers)
                 html = response.content
-                # print(html)
-                # breakpoint()
+
                 soup = BeautifulSoup(html, 'html.parser')
 
                 # Find all divs with the specified class
-                divs = soup.find_all('ul', class_='elementor-icon-list-items')
-                # print(divs)
-                # Iterate over each div
-                for div in divs:
-                    # For each div, find all anchor tags
-                    for a_tag in div.find_all('a'):
-                        # Get the name (text inside the anchor tag) and the URL (href attribute)
-                        name = a_tag.get_text(strip=True)
-                        url = a_tag['href']
-                        
-                        if 'uploads' in url:
-                            print(name, url)
-                            # Store the name and URL in the result dictionary
-                            pdf_links[name] = url
+                page_content = soup.find('div', class_='page-content')
 
+                # Если нужно найти по части класса, можно использовать следующее:
+                skip_data_ids = {"4fc28e7", "bde377a", "c846404", "609e470"}
+                cores = page_content.find_all('section', class_=lambda value: value and 'elementor-section' in value)
+                cores = [core for core in cores if core.get('data-id') in skip_data_ids]
+
+                for core in cores:
+
+                    for h3_tag in core.find_all('h3'):
+                        name_section = h3_tag.text
+
+                    containers = core.find_all('div', class_='elementor-widget-container')
+
+                    # Перебираем контейнеры и ищем внутри них нужные ul, li и ссылки
+                    for container in containers:
+                        ul = container.find('ul', class_='elementor-icon-list-items')
+                        if ul:
+                            li_items = ul.find_all('li', class_='elementor-icon-list-item')
+                            for li in li_items:
+                                a = li.find('a', href=True)
+                                if a:
+                                    title = a.find('span', class_='elementor-icon-list-text')
+                                    if title:
+                                        title_url = name_section +' '+title.text.strip()
+                                        url = a['href']
+                                        if 'Strategy Sheet' in title_url:
+                                            pdf_links[title_url] = url
+                    
         except requests.exceptions.RequestException as e:
             print("Error fetching the URL:", e)
         except Exception as e:
-            print("An error occurred:", e)
+            print("An error occurred:", e)  
         print(pdf_links)
-        breakpoint()
+        # breakpoint()
     return pdf_links
 
 
@@ -118,8 +131,8 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    excel_file = '19_milestone\Pacific Asset Management\Pacific Asset Management.xlsm'
-    # excel_file = 'Pacific Asset Management.xlsm'
+    # excel_file = '19_milestone\Pacific Asset Management\Pacific Asset Management.xlsm'
+    excel_file = 'Pacific Asset Management.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)
