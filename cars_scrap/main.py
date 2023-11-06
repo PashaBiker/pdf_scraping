@@ -1,5 +1,10 @@
+from bs4 import BeautifulSoup
+from aiogram import Bot, Dispatcher, executor, types
 import requests
+from auth_tg import API_TOKEN
 
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(bot)
 
 headers = {
     'authority': 'www.olx.ua',
@@ -21,20 +26,87 @@ headers = {
 response = requests.get(
     'https://www.olx.ua/transport/legkovye-avtomobili/krasilov/?currency=USD&search%5Border%5D=created_at:desc',
     headers=headers,
-)
+    )
 
-from bs4 import BeautifulSoup
 html_content = response.content
 
 
 soup = BeautifulSoup(html_content, 'html.parser')
 
 listing_grid = soup.find('div', {'data-testid': 'listing-grid'})
-cards_ad = listing_grid.find_all('div', {'data-cy': 'l-card', 'data-testid': 'l-card'})~
+
+cards_ad = listing_grid.find_all(
+    'div', {'data-cy': 'l-card', 'data-testid': 'l-card'})
 # Then, iterate over all the child divs with the specified attributes and classes
 links = []
 for div in cards_ad:
     link = div.find('a', {'class': 'css-rc5s2u'}).get('href')
-    links.append(link)
+    links.append('https://www.olx.ua/'+link)
 
-print(links)  
+# print(links)
+
+# for link in links:
+link = 'https://www.olx.ua/d/obyavlenie/prodam-bmw-e39-528i-IDSCprY.html'
+response = requests.get(
+    link,
+    headers=headers,
+)
+adv_html = response.content
+
+adv_content = BeautifulSoup(adv_html, 'html.parser')
+
+# Знаходимо всі елементи <li> в межах <ol> з конкретним data-testid
+breadcrumb_items = adv_content.find_all('li', attrs={"data-testid": "breadcrumb-item"})
+
+# Отримуємо четвертий елемент, якщо він існує
+car_brand = breadcrumb_items[3].get_text(strip=True) if len(breadcrumb_items) > 3 else None
+
+adv_param = adv_content.find('ul',class_='css-sfcl1s')
+# print(adv_param)
+# Шукаємо всі елементи li з певним класом
+items = adv_param.find_all('li', class_='css-1r0si1e')
+
+# Витягуємо потрібну інформацію
+for item in items:
+    text = item.get_text(strip=True)
+    if "VIN номер:" in text:
+        vin = text.split(': ')[1]
+    elif "Держ. номер реєстрації:" in text:
+        registration_number = text.split(': ')[1]
+    elif "Модель:" in text:
+        model = text.split(': ')[1]
+    elif "Рік випуску:" in text:
+        year_of_manufacture = text.split(': ')[1]
+    elif "Пробіг:" in text:
+        mileage = text.split(': ')[1]
+    elif "Вид палива:" in text:
+        fuel_type = text.split(': ')[1]
+    elif "Об'єм двигуна:" in text:
+        engine_capacity = text.split(': ')[1]
+
+# Виводимо інформацію
+
+async def send_advert(message: types.Message):
+    await message.answer(
+        f'❗️Нове оголошення на OLX: {link}\n'
+        f'🚙Автомобіль: {car_brand} {model}\n'
+        f'🕰Рік випуску: {year_of_manufacture}\n'
+        f'🎈Об\'єм двигуна: {engine_capacity}\n'
+        f'⛽️Вид палива: {fuel_type}\n'
+        f'🚕Пробіг: {mileage}\n'
+        f'#️⃣VIN: {vin}\n'
+        f'🆔Номер авто: {registration_number}'
+    )
+# Хендлер для команди старту /start
+@dp.message_handler(commands=['start'])
+async def send_welcome(message: types.Message):
+    await message.reply("Привіт! Надішліть мені команду /advert і я відправлю інформацію про оголошення.")
+
+# Хендлер для команди /advert, який викликає функцію send_advert
+@dp.message_handler(commands=['advert'])
+async def advert_command(message: types.Message):
+    await send_advert(message)
+
+# Запускаємо довготривалий процес опитування бота
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
