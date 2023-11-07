@@ -96,6 +96,8 @@ async def send_advert(message: types.Message):
         f'🚕Пробіг: {mileage}\n'
         f'#️⃣VIN: {vin}\n'
         f'🆔Номер авто: {registration_number}'
+        
+        f'Price: '
     )
 # Хендлер для команди старту /start
 @dp.message_handler(commands=['start'])
