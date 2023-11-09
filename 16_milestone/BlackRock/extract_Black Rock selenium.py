@@ -24,7 +24,6 @@ from requests_html import HTMLSession
 # pip install requests-html
 
 excel_file = 'BlackRock.xlsm'
-excel_file = '16_milestone\BlackRock\BlackRock.xlsm'
 
 def get_data(url):
 
@@ -180,29 +179,29 @@ def write_to_sheet(one_year,one_month,three_years, five_years, assets, OCF,AMC, 
 
                 cellc = sheet.range('C'+str(i+1))
                 cellc.value = float(OCF)/100
-                cellc.number_format = '0,00%'
+                cellc.number_format = '0.00%'
 
                 celld = sheet.range('D'+str(i+1))
                 celld.value = float(AMC)/100
-                celld.number_format = '0,00%'
+                celld.number_format = '0.00%'
 
                 celle = sheet.range('E'+str(i+1))
                 celle.value = float(one_month)/100
-                celle.number_format = '0,00%'
+                celle.number_format = '0.00%'
 
                 cellf = sheet.range('F'+str(i+1))
                 cellf.value = float(one_year)/100
-                cellf.number_format = '0,00%'
+                cellf.number_format = '0.00%'
 
                 cellg = sheet.range('G'+str(i+1))
                 if three_years:
                     cellg.value = float(three_years)/100
-                    cellg.number_format = '0,00%'
+                    cellg.number_format = '0.00%'
                 
                 cellh = sheet.range('H'+str(i+1))
                 if five_years:
                     cellh.value = float(five_years)/100
-                    cellh.number_format = '0,00%'
+                    cellh.number_format = '0.00%'
 
         wb.save()
 
@@ -234,7 +233,7 @@ def write_to_sheet(one_year,one_month,three_years, five_years, assets, OCF,AMC, 
                     cell = sheet.range(
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(str(value).replace(',', '')) / 100
-                    cell.number_format = '0,00%'
+                    cell.number_format = '0.00%'
 
 
     except Exception as e:
