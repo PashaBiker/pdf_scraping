@@ -1,0 +1,497 @@
+[
+    {
+        "LegalName": "1OAK Multi Asset 80 UCITS Fund A GBP Acc",
+        "SecId": "F000015O6T",
+        "PriceCurrency": "GBP",
+        "TenforeId": "IE00BMW4T172",
+        "CategoryName": "GBP Allocation 60-80% Equity",
+        "OngoingCostActual": 0.0095,
+        "Domicile": "Ireland",
+        "InceptionDate": "11/02/2021"
+    },
+    {
+        "LegalName": "1OAK Multi Asset 80 UCITS Fund B GBP Acc",
+        "SecId": "F000015O6W",
+        "PriceCurrency": "GBP",
+        "TenforeId": "IE00BMW4T404",
+        "CategoryName": "GBP Allocation 60-80% Equity",
+        "OngoingCostActual": 0.017,
+        "Domicile": "Ireland",
+        "InceptionDate": "28/01/2021"
+    },
+    {
+        "LegalName": "1OAK Multi Asset 80 UCITS Fund B USD Hedged Acc",
+        "SecId": "F000015O6X",
+        "PriceCurrency": "USD",
+        "TenforeId": "IE00BMW4T511",
+        "CategoryName": "USD Aggressive Allocation",
+        "OngoingCostActual": 0.017,
+        "Domicile": "Ireland",
+        "InceptionDate": "12/02/2021"
+    },
+    {
+        "LegalName": "1OAK Multi Asset 80 UCITS Fund D2 GBP Inc",
+        "SecId": "F000015O6Z",
+        "PriceCurrency": "GBP",
+        "TenforeId": "IE00BMW4T735",
+        "CategoryName": "GBP Allocation 60-80% Equity",
+        "OngoingCostActual": 0.017,
+        "Domicile": "Ireland",
+        "InceptionDate": "16/02/2021"
+    },
+    {
+        "LegalName": "1OAK Multi Asset 80 UCITS Fund D2 USD Inc",
+        "SecId": "F000015TPE",
+        "PriceCurrency": "USD",
+        "TenforeId": "IE00BN7JDN44",
+        "CategoryName": "USD Aggressive Allocation",
+        "OngoingCostActual": 0.017,
+        "Domicile": "Ireland",
+        "InceptionDate": "16/02/2021"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds Diversified Opportunity A CHF Acc",
+        "SecId": "F00001D90K",
+        "PriceCurrency": "CHF",
+        "TenforeId": "LU1162455403",
+        "CategoryName": "Other Allocation",
+        "Domicile": "Luxembourg",
+        "InceptionDate": "02/01/2015"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds Diversified Opportunity A EUR Acc",
+        "SecId": "F00001D90J",
+        "PriceCurrency": "EUR",
+        "TenforeId": "LU1162455072",
+        "CategoryName": "Other Allocation",
+        "Domicile": "Luxembourg",
+        "InceptionDate": "02/01/2015"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds Pinestone Global Equity Class A CHF accummulation",
+        "SecId": "F00000YC74",
+        "PriceCurrency": "CHF",
+        "TenforeId": "LU1389832426",
+        "CategoryName": "Other Equity",
+        "OngoingCostActual": 0.0144,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "06/04/2016"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds Pinestone Global Equity Class A EUR accummulation",
+        "SecId": "F00000YC76",
+        "PriceCurrency": "EUR",
+        "TenforeId": "LU1389831881",
+        "CategoryName": "Other Equity",
+        "OngoingCostActual": 0.014499999999999999,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "06/04/2016"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds Pinestone Global Equity Class A GBP accummulation",
+        "SecId": "F00000YC72",
+        "PriceCurrency": "GBP",
+        "TenforeId": "LU1389832186",
+        "CategoryName": "Other Equity",
+        "OngoingCostActual": 0.014199999999999999,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "06/04/2016"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds Pinestone Global Equity Class A USD accummulation",
+        "SecId": "F00000YC70",
+        "PriceCurrency": "USD",
+        "TenforeId": "LU1389831535",
+        "CategoryName": "Global Large-Cap Growth Equity",
+        "OngoingCostActual": 0.014499999999999999,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "06/04/2016"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds Pinestone Global Equity Class P EUR distribution",
+        "SecId": "F00000YC77",
+        "PriceCurrency": "EUR",
+        "TenforeId": "LU1389831964",
+        "CategoryName": "Other Equity",
+        "OngoingCostActual": 0.0226,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "05/04/2016"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds Pinestone Global Equity Class P GBP distribution",
+        "SecId": "F00000YC73",
+        "PriceCurrency": "GBP",
+        "TenforeId": "LU1389832269",
+        "CategoryName": "Other Equity",
+        "OngoingCostActual": 0.023,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "28/06/2017"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds Pinestone Global Equity Class P USD distribution",
+        "SecId": "F00000YC71",
+        "PriceCurrency": "USD",
+        "TenforeId": "LU1389831618",
+        "CategoryName": "Global Large-Cap Growth Equity",
+        "OngoingCostActual": 0.022000000000000002,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "07/04/2016"
+    },
+    {
+        "LegalName": "20UGS (UCITS) Funds TCW Unconstrained Plus Bond Strategy A USD",
+        "SecId": "F00000UIMR",
+        "PriceCurrency": "USD",
+        "TenforeId": "LU1002972054",
+        "CategoryName": "USD Flexible Bond",
+        "OngoingCostActual": 0.0131,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "16/12/2013"
+    },
+    {
+        "LegalName": "24 Capital Management SICAV plc - 24 Global Currency Fund Share Class A USD Accumulation",
+        "SecId": "F000013BGI",
+        "PriceCurrency": "USD",
+        "TenforeId": "MT7000022612",
+        "CategoryName": "Currency",
+        "Domicile": "Malta",
+        "InceptionDate": "10/09/2018"
+    },
+    {
+        "LegalName": "2Xideas UCITS - Global Mid Cap Library Fund S GBP",
+        "SecId": "F0000144J5",
+        "PriceCurrency": "GBP",
+        "TenforeId": "LU2001262620",
+        "CategoryName": "Global Flex-Cap Equity",
+        "OngoingCostActual": 0.01,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "30/08/2019"
+    },
+    {
+        "LegalName": "2Xideas UCITS - Global Mid Cap Library Fund S USD",
+        "SecId": "F000010G52",
+        "PriceCurrency": "USD",
+        "TenforeId": "LU1785301513",
+        "CategoryName": "Global Flex-Cap Equity",
+        "OngoingCostActual": 0.01,
+        "Domicile": "Luxembourg",
+        "InceptionDate": "30/04/2018"
+    },
+    {
+        "LegalName": "36ONE Global Equity Fund PC Class A USD Accumulation",
+        "SecId": "F000013GO6",
+        "PriceCurrency": "USD",
+        "TenforeId": "GG00BF42WV17",
+        "CategoryName": "Global Large-Cap Growth Equity",
+        "Domicile": "Guernsey",
+        "InceptionDate": "17/04/2018"
+    },
+    {
+        "LegalName": "7IM AAP Adventurous Fund A Acc",
+        "SecId": "F000001EZU",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2507",
+        "CategoryName": "GBP Allocation 80%+ Equity",
+        "OngoingCostActual": 0.0125,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Adventurous Fund A Inc",
+        "SecId": "F000001EZV",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2382",
+        "CategoryName": "GBP Allocation 80%+ Equity",
+        "OngoingCostActual": 0.0125,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Adventurous Fund C Acc",
+        "SecId": "F000001EZR",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2C75",
+        "CategoryName": "GBP Allocation 80%+ Equity",
+        "OngoingCostActual": 0.0075,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Adventurous Fund C Inc",
+        "SecId": "F000001EZT",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2B68",
+        "CategoryName": "GBP Allocation 80%+ Equity",
+        "OngoingCostActual": 0.0075,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Adventurous Fund D Acc",
+        "SecId": "F00000216C",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B39LHH08",
+        "CategoryName": "GBP Allocation 80%+ Equity",
+        "OngoingCostActual": 0.0165,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "02/06/2008"
+    },
+    {
+        "LegalName": "7IM AAP Adventurous Fund D Inc",
+        "SecId": "F00000216B",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B39LMN11",
+        "CategoryName": "GBP Allocation 80%+ Equity",
+        "OngoingCostActual": 0.0165,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "02/06/2008"
+    },
+    {
+        "LegalName": "7IM AAP Adventurous Fund S Acc",
+        "SecId": "F00000SSTS",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00BJBPX070",
+        "CategoryName": "GBP Allocation 80%+ Equity",
+        "OngoingCostActual": 0.005,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "26/02/2014"
+    },
+    {
+        "LegalName": "7IM AAP Adventurous Fund S Inc",
+        "SecId": "F00000SSTT",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00BJBPX187",
+        "CategoryName": "GBP Allocation 80%+ Equity",
+        "OngoingCostActual": 0.005,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "26/02/2014"
+    },
+    {
+        "LegalName": "7IM AAP Adventurous Fund X Acc",
+        "SecId": "F00001GK1V",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00BMV2BB68",
+        "CategoryName": "GBP Allocation 80%+ Equity",
+        "Domicile": "United Kingdom",
+        "InceptionDate": "21/07/2023"
+    },
+    {
+        "LegalName": "7IM AAP Balanced Fund A Acc",
+        "SecId": "F000001F00",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2R29",
+        "CategoryName": "GBP Allocation 40-60% Equity",
+        "OngoingCostActual": 0.011699999999999999,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Balanced Fund A Inc",
+        "SecId": "F000001F01",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2N80",
+        "CategoryName": "GBP Allocation 40-60% Equity",
+        "OngoingCostActual": 0.011699999999999999,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Balanced Fund C Acc",
+        "SecId": "F000001EZX",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB3794",
+        "CategoryName": "GBP Allocation 40-60% Equity",
+        "OngoingCostActual": 0.0067,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Balanced Fund C Inc",
+        "SecId": "F000001EZZ",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2V64",
+        "CategoryName": "GBP Allocation 40-60% Equity",
+        "OngoingCostActual": 0.0067,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Balanced Fund D Acc",
+        "SecId": "F00000216I",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B39L9C92",
+        "CategoryName": "GBP Allocation 40-60% Equity",
+        "OngoingCostActual": 0.015700000000000002,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "02/06/2008"
+    },
+    {
+        "LegalName": "7IM AAP Balanced Fund D Inc",
+        "SecId": "F00000216H",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B39L9J61",
+        "CategoryName": "GBP Allocation 40-60% Equity",
+        "OngoingCostActual": 0.015700000000000002,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "02/06/2008"
+    },
+    {
+        "LegalName": "7IM AAP Balanced Fund S Acc",
+        "SecId": "F00000SSTO",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00BJBPWW23",
+        "CategoryName": "GBP Allocation 40-60% Equity",
+        "OngoingCostActual": 0.0042,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "26/02/2014"
+    },
+    {
+        "LegalName": "7IM AAP Balanced Fund S Inc",
+        "SecId": "F00000SSTP",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00BJBPWX30",
+        "CategoryName": "GBP Allocation 40-60% Equity",
+        "OngoingCostActual": 0.0042,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "26/02/2014"
+    },
+    {
+        "LegalName": "7IM AAP Income Fund A Inc",
+        "SecId": "F0GBR04ERL",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB0033953612",
+        "CategoryName": "GBP Allocation 20-40% Equity",
+        "OngoingCostActual": 0.018600000000000002,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "12/12/2003"
+    },
+    {
+        "LegalName": "7IM AAP Income Fund B Acc",
+        "SecId": "F0GBR04FTF",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB0033953836",
+        "CategoryName": "GBP Allocation 20-40% Equity",
+        "OngoingCostActual": 0.0171,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "12/12/2003"
+    },
+    {
+        "LegalName": "7IM AAP Income Fund C Acc",
+        "SecId": "F0GBR06OFT",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB0033954024",
+        "CategoryName": "GBP Allocation 20-40% Equity",
+        "OngoingCostActual": 0.0086,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "12/12/2003"
+    },
+    {
+        "LegalName": "7IM AAP Income Fund C Inc",
+        "SecId": "F0GBR06OFS",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB0033953943",
+        "CategoryName": "GBP Allocation 20-40% Equity",
+        "OngoingCostActual": 0.0086,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "12/12/2003"
+    },
+    {
+        "LegalName": "7IM AAP Income Fund D Acc",
+        "SecId": "F0GBR05WOO",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B0438L11",
+        "CategoryName": "GBP Allocation 20-40% Equity",
+        "OngoingCostActual": 0.0191,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "01/12/2004"
+    },
+    {
+        "LegalName": "7IM AAP Income Fund D Inc",
+        "SecId": "F0GBR05WON",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B0438H74",
+        "CategoryName": "GBP Allocation 20-40% Equity",
+        "OngoingCostActual": 0.0191,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "01/12/2004"
+    },
+    {
+        "LegalName": "7IM AAP Income Fund S Acc",
+        "SecId": "F00000SSTA",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00BJBPWF57",
+        "CategoryName": "GBP Allocation 20-40% Equity",
+        "OngoingCostActual": 0.0060999999999999995,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "26/02/2014"
+    },
+    {
+        "LegalName": "7IM AAP Income Fund S Inc",
+        "SecId": "F00000SSTB",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00BJBPWG64",
+        "CategoryName": "GBP Allocation 20-40% Equity",
+        "OngoingCostActual": 0.0060999999999999995,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "26/02/2014"
+    },
+    {
+        "LegalName": "7IM AAP Moderately Adventurous Fund A Acc",
+        "SecId": "F000001F04",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2J45",
+        "CategoryName": "GBP Allocation 60-80% Equity",
+        "OngoingCostActual": 0.011899999999999999,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Moderately Adventurous Fund A Inc",
+        "SecId": "F000001F05",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2F07",
+        "CategoryName": "GBP Allocation 60-80% Equity",
+        "OngoingCostActual": 0.011899999999999999,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Moderately Adventurous Fund C Acc",
+        "SecId": "F000001F02",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2M73",
+        "CategoryName": "GBP Allocation 60-80% Equity",
+        "OngoingCostActual": 0.0069,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Moderately Adventurous Fund C Inc",
+        "SecId": "F000001F03",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B2PB2K59",
+        "CategoryName": "GBP Allocation 60-80% Equity",
+        "OngoingCostActual": 0.0069,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "27/03/2008"
+    },
+    {
+        "LegalName": "7IM AAP Moderately Adventurous Fund D Acc",
+        "SecId": "F00000216F",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B39LB902",
+        "CategoryName": "GBP Allocation 60-80% Equity",
+        "OngoingCostActual": 0.0159,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "02/06/2008"
+    },
+    {
+        "LegalName": "7IM AAP Moderately Adventurous Fund D Inc",
+        "SecId": "F00000216G",
+        "PriceCurrency": "GBP",
+        "TenforeId": "GB00B39LH586",
+        "CategoryName": "GBP Allocation 60-80% Equity",
+        "OngoingCostActual": 0.0159,
+        "Domicile": "United Kingdom",
+        "InceptionDate": "02/06/2008"
+    }
+]

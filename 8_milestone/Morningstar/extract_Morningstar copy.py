@@ -39,7 +39,7 @@ def get_data(file):
                     date.append(modified_date1)
                 else:
                     # Если в первой строке даты нет, проверяем вторую строку
-                    date_match2 = re.search(r'(\d{2}/\d{2}/\d{4})', text[2])
+                    date_match2 = re.search(r'Factsheet\s+(\d{2}/\d{2}/\d{4})', text[2])
                     if date_match2:
                         date_value2 = date_match2.group(1)
                         modified_date2 = date_value2.replace('/', '.')
@@ -109,8 +109,14 @@ def get_data(file):
             # Если мы внутри интересующего нас блока, добавляем строки
             elif found_portfolio_holdings:
                 current_group.append(line.strip())
-
-    # print(filenames)
+    # print(file,'-------------file')
+    # print(filenames,'---------- filenames')
+    if "Governed" not in file:
+        # Modify the filenames to remove 'Governed Portfolio - ' if it's present
+        filenames = [name.replace('Governed Portfolio - ', '') + ' Portfolio' if 'Governed Portfolio - ' in name else name for name in filenames]
+    else:
+        # If "Governed " is in the file name, keep the filenames list as is
+        filenames = filenames
     # print(groups)
 
     categories = [
@@ -258,6 +264,7 @@ def write_to_sheet(data, excel_file):
 
             row = None
             for cell in sheet.range('A:A'):
+                # if cell.value and filename.strip() in cell.value.strip():
                 if cell.value and cell.value.strip() == filename.strip():
                     row = cell.row
                     break

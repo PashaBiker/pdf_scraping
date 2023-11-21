@@ -120,7 +120,7 @@ def write_to_sheet(pdf_link, spreadsheet):
 if __name__ == '__main__':
     # enter the name of the excel file
     excel_file = 'Morningstar Investment Management Europe Limited.xlsm'
-    # excel_file = '8_milestone\Morningstar\Morningstar Investment Management Europe Limited.xlsm'
+    excel_file = '8_milestone\Morningstar\Morningstar Investment Management Europe Limited.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)

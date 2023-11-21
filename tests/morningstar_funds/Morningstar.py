@@ -71,6 +71,8 @@ modified_data = fix_ISIN(combined_data)
 modified_data = edit_currency(modified_data)
 # pretty print the JSON data
 # print(json.dumps(modified_data, indent=4))
+with open('data.json', 'w') as file:
+    json.dump(modified_data, file)
 
 
 # Convert the data into a pandas DataFrame

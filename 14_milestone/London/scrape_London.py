@@ -117,6 +117,7 @@ def write_to_sheet(pdf_link, spreadsheet):
 if __name__ == '__main__':
     # enter the name of the excel file
     excel_file = 'London and Capital Asset Management.xlsm'
+    # excel_file = '14_milestone\London\London and Capital Asset Management.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)

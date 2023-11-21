@@ -26,9 +26,9 @@ def get_data(file):
     print("[INFO] Converting PDF to images...")
     pages = pdf2image.convert_from_path(file,
                                         dpi=300, 
+                                        # first_page=2,
                                         first_page=2,
-                                        # first_page=28,
-                                        # last_page=29,
+                                        last_page=3,
                                         poppler_path=poppler_path)
 
     if not os.path.exists(directory):
@@ -55,7 +55,7 @@ def get_data(file):
     for index, path in enumerate(page_image_paths):
         print(f"[INFO] Processing image: {path}")
         text = pytesseract.image_to_string(Image.open(path))
-        lines = [line.replace('J it','Japan equity').replace('Pacifi -','Pacific ex-').replace('UK equit','UK equity').replace('E -UK equit','Europe ex-UK equity') for line in text.split('\n') if line.strip() != '']
+        lines = [line.replace('J it','Japan equity').replace('Pacifi -','Pacific ex-').replace('UK equit','UK equity').replace('E -UK equit','Europe ex-UK equity').replace('North Ameri i','North America equity') for line in text.split('\n') if line.strip() != '']
         # Check if page is even using its index
         even_page = (index + 1) % 2 == 0
         cleaned_lines = clean_text(lines, even_page)
@@ -92,10 +92,16 @@ def get_data(file):
     for page in data:
         for line in page:
             if "OCF" in line:
-                percentage = line.split()[-1]
+                print(line)
+                new_line = line.replace('(OCF 679','(OCF) 0.67%')
+                percentage = new_line.split()[-1]
+                print(percentage)
                 if "%" in percentage:
-                    OCF.append(float(percentage.replace('%',''))/100)
-                    print('[INFO] OCF appended:', percentage)
+                    try:
+                        OCF.append(float(percentage.replace('%',''))/100)
+                        print('[INFO] OCF appended:', percentage)
+                    except:
+                        OCF.append(0)
 
 
     def clean_data(line):
@@ -173,7 +179,8 @@ def get_data(file):
             asset_data.append(assets)
             print('[INFO] Asset data appended for this page')   
 
-    # print("[RESULTS] Filename:", filename)
+    print("[RESULTS] Filename:", filename)
+    # print("[RESULTS] Filenames quantity:", enumerate(filename))
     # print("[RESULTS] OCF:", OCF)
     # print("[RESULTS] Y values:", performance_values)
     # print("[RESULTS] Asset percentages:", asset_data)
