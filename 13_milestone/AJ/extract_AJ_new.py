@@ -13,38 +13,36 @@ import pdf2image
 from PIL import Image
 import pytesseract
 import os
-import easyocr
-from pdf2image import convert_from_path
 
-# pip install torch torchvision torchaudio 
-
-excel_file = '13_milestone\AJ\AJ Bell.xlsm'
-pdf_folder = '13_milestone\AJ\AJ Bell PDFs'
+excel_file = 'AJ Bell.xlsm'
+pdf_folder = 'AJ Bell PDFs'
 
 
-poppler_path = r'13_milestone\AJ\poppler-23.07.0\Library\bin'
+poppler_path = r'poppler-23.07.0\Library\bin'
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-directory = "13_milestone\\AJ\\pictures\\"
+directory = "pictures\\"
 
 def get_data(file):
     print("[INFO] Converting PDF to images...")
-    pages = convert_from_path(file, dpi=300, first_page=2, last_page=3, poppler_path=poppler_path)
+    pages = pdf2image.convert_from_path(file,
+                                        dpi=400, 
+                                        first_page=2,
+                                        # first_page=40,
+                                        # last_page=41,
+                                        poppler_path=poppler_path)
 
     if not os.path.exists(directory):
         os.makedirs(directory)
 
     page_image_paths = []
     for i, page in enumerate(pages, start=2):
-        path = os.path.join(directory, f"page_{i}.png")
+        path = directory + f"page_{i}.png"
         page.save(path, 'PNG')
         page_image_paths.append(path)
         print(f"[INFO] Saved: {path}")
 
     print("[INFO] Extracting text from images using OCR...")
-    reader = easyocr.Reader(['en'], gpu=True)  # Initialize the EasyOCR reader
-
     page_texts = []
-    
     def clean_text(lines, even_page):
         new_lines = []
         for line in lines:
@@ -53,15 +51,25 @@ def get_data(file):
             new_lines.append(line)
         return new_lines
 
+    # Process each image path
     for index, path in enumerate(page_image_paths):
         print(f"[INFO] Processing image: {path}")
-        results = reader.readtext(path, detail=0)  # OCR process
-        lines = [line.replace('J it', 'Japan equity').replace('Pacifi -', 'Pacific ex-').replace('UK equit', 'UK equity').replace('E -UK equit', 'Europe ex-UK equity').replace('North Ameri i', 'North America equity') for line in results if line.strip() != '']
-        
+        text = pytesseract.image_to_string(Image.open(path))
+        lines = [
+            # line
+            re.sub(r'(\d),(\d)', r'\1.\2', line)
+            .replace('J it', 'Japan equity')
+            .replace('Pacifi -', 'Pacific ex-')
+            .replace('UK equit', 'UK equity')
+            .replace('E -UK equit', 'Europe ex-UK equity')
+            .replace('North Ameri i', 'North America equity')
+            .replace(',.','.')
+            for line in text.split('\n') if line.strip() != ''
+        ]
+        # Check if page is even using its index
         even_page = (index + 1) % 2 == 0
         cleaned_lines = clean_text(lines, even_page)
         page_texts.append(cleaned_lines)
-
 
     data = page_texts
 
@@ -246,7 +254,6 @@ def download_pdfs(spreadsheet):
             try:
                 # Download the PDF from the link
                 headers = {
-                    'authority': 'www.brewin.co.uk',
                     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
                     'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
                     # 'cookie': 'AWSALBCORS=8UUUHfQdESrvLwo4CI8XKlk6t7U9rLgG9AIoc3KGx3yFF4RezDUWtg9shBAsmI99TH33t2GzhWUDVtDbYVnL42F1APmd2Exm0ximvNvqqrsErY/Tgbw1ZidxvSd2; AWSALB=onY8tPtZa6WYnLklUHASdAq2MSKIgaXMdRTpVYucSFv4htAaZUcXwJ+tpR5oBaPVMtCRXDq/ZJPG6eDCe38mERDuEw1KXDsgyrkx2Pfg5toMszCNNv+EvB0Pycx9',
@@ -343,7 +350,7 @@ def write_to_sheet(data, excel_file):
                 cell = sheet.range(
                     f'{column_letter_from_index(column_index)}{row}')
                 cell.value = float(value) / 100
-                cell.number_format = '0,00%'
+                cell.number_format = '0.00%'
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
@@ -367,7 +374,7 @@ def column_letter_from_index(index):
 
 if __name__ == '__main__':
 
-    # pdf_folder = download_pdfs(excel_file)
+    pdf_folder = download_pdfs(excel_file)
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 

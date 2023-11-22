@@ -25,10 +25,10 @@ directory = "13_milestone\\AJ\\pictures\\"
 def get_data(file):
     print("[INFO] Converting PDF to images...")
     pages = pdf2image.convert_from_path(file,
-                                        dpi=300, 
+                                        dpi=400, 
                                         # first_page=2,
-                                        first_page=2,
-                                        last_page=3,
+                                        first_page=40,
+                                        last_page=41,
                                         poppler_path=poppler_path)
 
     if not os.path.exists(directory):
@@ -55,7 +55,17 @@ def get_data(file):
     for index, path in enumerate(page_image_paths):
         print(f"[INFO] Processing image: {path}")
         text = pytesseract.image_to_string(Image.open(path))
-        lines = [line.replace('J it','Japan equity').replace('Pacifi -','Pacific ex-').replace('UK equit','UK equity').replace('E -UK equit','Europe ex-UK equity').replace('North Ameri i','North America equity') for line in text.split('\n') if line.strip() != '']
+        lines = [
+            # line
+            re.sub(r'(\d),(\d)', r'\1.\2', line)
+            .replace('J it', 'Japan equity')
+            .replace('Pacifi -', 'Pacific ex-')
+            .replace('UK equit', 'UK equity')
+            .replace('E -UK equit', 'Europe ex-UK equity')
+            .replace('North Ameri i', 'North America equity')
+            .replace(',.','.')
+            for line in text.split('\n') if line.strip() != ''
+        ]
         # Check if page is even using its index
         even_page = (index + 1) % 2 == 0
         cleaned_lines = clean_text(lines, even_page)
