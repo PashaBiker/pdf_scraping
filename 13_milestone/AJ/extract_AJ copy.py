@@ -26,9 +26,9 @@ def get_data(file):
     print("[INFO] Converting PDF to images...")
     pages = pdf2image.convert_from_path(file,
                                         dpi=400, 
-                                        # first_page=2,
-                                        first_page=40,
-                                        last_page=41,
+                                        first_page=2,
+                                        # first_page=48,
+                                        # last_page=49,
                                         poppler_path=poppler_path)
 
     if not os.path.exists(directory):
@@ -64,6 +64,8 @@ def get_data(file):
             .replace('E -UK equit', 'Europe ex-UK equity')
             .replace('North Ameri i', 'North America equity')
             .replace(',.','.')
+            .replace('ngoing charges figur F .139','OCF 0.73%')
+            .replace('h f F 0.39%','OCF 0.39%')
             for line in text.split('\n') if line.strip() != ''
         ]
         # Check if page is even using its index

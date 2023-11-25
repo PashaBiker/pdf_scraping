@@ -18,8 +18,8 @@ excel_file = 'AJ Bell.xlsm'
 pdf_folder = 'AJ Bell PDFs'
 
 
-poppler_path = r'poppler-23.07.0\Library\bin'
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+poppler_path = r'C:\Users\26\Documents\IONOS HiDrive\Mabel Insights\DFM\poppler-23.07.0\Library\bin'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Users\26\Documents\IONOS HiDrive\Mabel Insights\DFM\Tesseract-OCR\tesseract.exe'
 directory = "pictures\\"
 
 def get_data(file):
@@ -64,6 +64,8 @@ def get_data(file):
             .replace('E -UK equit', 'Europe ex-UK equity')
             .replace('North Ameri i', 'North America equity')
             .replace(',.','.')
+            .replace('ngoing charges figur F .139','OCF 0.73%')
+            .replace('h f F 0.39%','OCF 0.39%')
             for line in text.split('\n') if line.strip() != ''
         ]
         # Check if page is even using its index
