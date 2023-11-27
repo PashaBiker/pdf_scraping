@@ -12,7 +12,7 @@ from pdf2image import convert_from_path
 from PIL import ImageEnhance
 from concurrent.futures import ThreadPoolExecutor
 import threading
-
+import easyocr
 
 
 
@@ -29,8 +29,7 @@ def download_pdfs(spreadsheet):
         wb = app.books.open(spreadsheet, update_links=False, read_only=False)
         sheet = wb.sheets[1]
 
-        # Create the folder if it doesn't exist
-        folder_name = "LGT PDFs"
+        # Create the folder if it doesn't exist 
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
 
@@ -95,6 +94,7 @@ def ocr_from_pdf(pdf_path):
         picture_text = re.sub(r'Fixed a 38% BGE', 'Fixed interest 38% BGE', picture_text)
         picture_text = re.sub(r'fh Equities 30% HC oe', 'fh Equities 90% HC oe', picture_text)
         picture_text = re.sub(r'fl Equities 11% Total', 'fl Equities 71% Total', picture_text)
+        picture_text = re.sub(r'f a ‘6% Schroder', 'Fixed interest 15% ', picture_text)
         all_text += picture_text + '\n'
         
     return all_text

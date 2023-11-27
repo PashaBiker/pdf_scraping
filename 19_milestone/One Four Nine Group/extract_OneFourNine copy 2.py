@@ -84,6 +84,7 @@ def download_pdfs(spreadsheet):
 
     print('All PDFs downloaded!')
     return folder_name
+
 def get_data(pdf_path):
     def safe_get(lst, index, default=None):
             return lst[index] if index < len(lst) else default

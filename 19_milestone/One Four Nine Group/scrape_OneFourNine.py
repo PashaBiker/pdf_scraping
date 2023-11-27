@@ -37,12 +37,29 @@ def scrape_links(file_urls):
                 html = response.content
                 soup = BeautifulSoup(html, 'html.parser')
 
-                pdf_links = {}
+                # for a_tag in soup.select('.column.column--md-3 a'):
+                #     name = a_tag.find('span').text
+                #     url = a_tag['href']
+                #     pdf_links[name] = url
 
-                for a_tag in soup.select('.column.column--md-3 a'):
-                    name = a_tag.find('span').text
-                    url = a_tag['href']
-                    pdf_links[name] = url
+                                
+                # Find the div with class "column column--md-4"
+                divs = soup.findAll('div', class_='column column--md-4')
+
+                # Extract the first word from the strong text
+
+                # Find all 'a' tags within the div
+                for div in divs:
+                    for a_tag in div.find_all('a'):
+                        first_word = div.strong.text.split()[0]
+                        # Extract the name (text within the span)
+                        name = a_tag.span.text
+                        # Extract the href attribute (URL)
+                        url = a_tag['href']
+
+                        # Combine the first word and name to create a key
+                        key = f'{first_word} {name}'
+                        pdf_links[key] = url
 
         except requests.exceptions.RequestException as e:
             print("Error fetching the URL:", e)
@@ -85,7 +102,7 @@ def write_to_sheet(pdf_link, spreadsheet):
 
         for key, value in pdf_link.items():  
             for i, row in enumerate(range_values):
-                if key == row:
+                if row in key:
                     print('Writing PDF link of ' + key + '...')
                     cell = sheet.range('D' + str(i + 1))
                     cell.value = value
@@ -106,7 +123,9 @@ if __name__ == '__main__':
     excel_file = 'One Four Nine Group.xlsm'
 
     file_urls = get_urls(excel_file)
-    pdf_link = scrape_links(file_urls)
+    unique_urls = {v: k for k, v in file_urls.items()}
+    unique_urls_inv = {v: k for k, v in unique_urls.items()}
+    pdf_link = scrape_links(unique_urls_inv)
     write_to_sheet(pdf_link, excel_file)
 
     print('Done!')

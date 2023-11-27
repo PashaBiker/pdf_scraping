@@ -16,12 +16,10 @@ import easyocr
 import numpy as np
 
 
-
-folder_name = "LGT PDFs"
-excel_file = 'LGT Wealth Management.xlsm'
-pytesseract.pytesseract.tesseract_cmd = r'C:\Users\26\Documents\IONOS HiDrive\Mabel Insights\DFM\Tesseract-OCR\tesseract.exe'
-poppler_path=r'C:\Users\26\Documents\IONOS HiDrive\Mabel Insights\DFM\poppler-23.07.0\Library\bin'
-
+folder_name = "7_milestone\LGT\LGT PDFs"
+excel_file = '7_milestone\LGT\LGT Wealth Management.xlsm'
+poppler_path = r'13_milestone\AJ\poppler-23.07.0\Library\bin'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 
 def download_pdfs(spreadsheet):
@@ -93,6 +91,10 @@ def ocr_from_pdf(pdf_path):
 
         # Concatenate the results
         picture_text = ' '.join([result[1] for result in results])
+
+        # Apply your substitutions
+        picture_text = re.sub(r'Bh Equities 1% Total', 'Bh Equities 71% Total', picture_text)
+        # ... other substitutions ...
 
         all_text += picture_text + '\n'
         
@@ -214,6 +216,18 @@ def get_data(file):
                     match = re.search(rf'{label}\s+(\d+)', line)
                     if match:
                         asset_values[label] = match.group(1)
+        # for line in picture_lines:
+        #     for word in asset_labels:
+        #         # Use a regular expression to find the asset word as a whole word (not as part of other words)
+        #         match = re.search(r'\b' + word + r'\b', line)
+        #         if match:
+        #             # Extract the substring from the matched word till the end of the line
+        #             substring = line[match.end():]
+        #             # Use a regular expression to find the first whole number in the substring
+        #             numbers = re.findall(r'\b\d+\b', substring)
+        #             if numbers:
+        #                 number = numbers[0]
+        #                 asset_values[word] = number
         # print(asset_values)
         total = sum(int(value) for value in asset_values.values())
         
@@ -270,7 +284,7 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
                 value = data[key]
                 if is_float(value):
                     sheet.cells(row, column).value = float(value) / 100
-                    sheet.cells(row, column).number_format = '0.00%'
+                    sheet.cells(row, column).number_format = '0,00%'
 
         column_headings = sheet.range('A1').expand('right').value
 
@@ -296,7 +310,7 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
                 cell.value = '-'  # or some default value
             elif is_float(value):
                 cell.value = float(value) / 100
-            cell.number_format = '0.00%'
+            cell.number_format = '0,00%'
 
         sheet = wb.sheets[3]
 
@@ -328,7 +342,7 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
                     else:
                         # value = value.replace(',', '').replace('%', '')
                         cell.value = value
-                    cell.number_format = '0.00%'
+                    cell.number_format = '0,00%'
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
@@ -370,4 +384,3 @@ if __name__ == '__main__':
 
 
     print('\nDone!')
-

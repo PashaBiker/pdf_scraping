@@ -31,21 +31,24 @@ def scrape_links(file_urls):
             wait = WebDriverWait(driver, 10)  # Ожидание до 10 секунд
             time.sleep(5)
             # Ждем появления кнопки "Accept All" и кликаем по ней
-            accept_all_button = wait.until(EC.element_to_be_clickable((By.ID, "cookiescript_accept")))
+            accept_all_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"cookiescript_accept\"]")))
             accept_all_button.click()
             wait.until(EC.invisibility_of_element_located((By.ID, "cookiescript_injected")))
 
+            time.sleep(5)
+            # driver.get(url)
             # Ждем появления элемента 'Financial Intermediary' и кликаем по нему
-            fi_label = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[text()='Financial Intermediary']/ancestor::label")))
+            fi_label = wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[3]/div[5]/div[2]/section[3]/div/div[1]/ul/li[3]')))
             fi_label.click()
 
             # Ждем появления элемента 'I Accept' и кликаем по нему
-            i_accept_label = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[text()='I Accept']/ancestor::label")))
+            i_accept_label = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/div[5]/div[2]/form/section/div/div/div[2]/div/label[1]")))
             i_accept_label.click()
 
             # Ждем появления кнопки "Proceed" и кликаем по ней
-            proceed_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Proceed')]")))
+            proceed_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.dialogs > div.popup.selfCertProfile-popup > div.disclaimer.col > form > section > div > div > div.disclaimer-actions.align-items-start > a')))
             proceed_button.click()
+            time.sleep(5)
 
             # Копируем исходный код страницы
             page_source = driver.page_source
@@ -54,8 +57,6 @@ def scrape_links(file_urls):
 
 
             soup = BeautifulSoup(page_source, 'html.parser')
-
-            fund_data = {}
 
             fund_elements = soup.find_all('tr')
 
@@ -67,14 +68,15 @@ def scrape_links(file_urls):
                     fact_sheet_link_element = fund_element.find('a', text='EN')
                     if fact_sheet_link_element:
                         fact_sheet_link = fact_sheet_link_element['href']
-                        fund_data[fund_name] = fact_sheet_link
+                        pdf_links[fund_name] = fact_sheet_link
 
         except requests.exceptions.RequestException as e:
             print("Error fetching the URL:", e)
         except Exception as e:
             print("An error occurred:", e)
-        # print(fund_data)
-    return fund_data
+        print(pdf_links)
+        # breakpoint()
+    return pdf_links
 
 
 def get_urls(spreadsheet):
@@ -131,7 +133,8 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    excel_file = '10_milestone\GAM.xlsm'
+    excel_file = 'GAM.xlsm'
+    # excel_file = '10_milestone\GAM.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)

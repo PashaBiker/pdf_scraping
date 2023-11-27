@@ -98,7 +98,7 @@ def get_data(pdf_path):
         height = second_page.height
         
         # Calculate x1 for 59.375% of the page width
-        x1 = 0.59375 * width
+        x1 = 0.59575 * width
         
         # Define bounding box
         bbox = (0, 0, x1, height)
@@ -147,6 +147,9 @@ def get_data(pdf_path):
                 date_line = line.split('as at ')
                 date = date_line[-1]
                 # print(date)
+            if 'as of' in line:
+                date_line = line.split('as of ')
+                date = date_line[-1]
 
         # for i,line in enumerate(second_page_text):
         #     for line in second_page_text:

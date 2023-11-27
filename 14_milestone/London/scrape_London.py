@@ -99,7 +99,7 @@ def write_to_sheet(pdf_link, spreadsheet):
 
         for key, value in pdf_link.items():  
             for i, row in enumerate(range_values):
-                if row == key:
+                if row in key :
                     print('Writing PDF link of ' + key + '...')
                     cell = sheet.range('D' + str(i + 1))
                     cell.value = value
@@ -110,7 +110,6 @@ def write_to_sheet(pdf_link, spreadsheet):
     finally:
         wb.save()
         wb.close()
-
 
 
 
