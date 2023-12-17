@@ -225,7 +225,7 @@ def get_assets_groups_text(pdf_path):
                         'Alternatives',
                         'Diversifying Assets',
                         'Absolute Return',
-                        'Cash',]
+                        ]
         
         # print(extracted_lines)
         # Initialize a dictionary to hold the asset percentages
@@ -304,16 +304,17 @@ def get_assets(pdf_path):
                         asset_class_table = table
                         # Now process this table as required
                         # For example, print it or extract data from it
-                        # print(asset_class_table)
+                        print(asset_class_table)
                         # Initialize a dictionary to hold the sum of percentages for each asset label
-                        label_percentages = {label: None for label in asset_labels}
-
+                        # label_percentages = {label: None for label in asset_labels}
+                        label_percentages = {}
                         # Variable to keep track of the current label
                         current_label = None
 
                         # Iterate through the asset data
+                                                
                         for row in asset_class_table:
-                            # Skip the header row
+                        # Skip the header row
                             if row[0] == 'Asset Class':
                                 continue
 
@@ -321,18 +322,34 @@ def get_assets(pdf_path):
                             if row[1] is not None and row[1].strip():
                                 current_label = row[1].strip()
 
-                            # Make sure we're dealing with an asset label we recognize
-                            if current_label not in label_percentages or label_percentages[current_label] is None:
-                                label_percentages[current_label] = 0
+                                # Initialize the label in the dictionary if it's not already there
+                                if current_label not in label_percentages:
+                                    label_percentages[current_label] = 0
 
-                            # Now you can safely add the float value
-                            label_percentages[current_label] += float(row[4])
+                            # Add the float value to the current label if it's valid
+                            if current_label in label_percentages and row[4] is not None:
+                                label_percentages[current_label] += float(row[4])
+                        # for row in asset_class_table:
+                        #     # Skip the header row
+                        #     if row[0] == 'Asset Class':
+                        #         continue
+
+                        #     # Check if a new label is provided (not None and not empty after stripping whitespace)
+                        #     if row[1] is not None and row[1].strip():
+                        #         current_label = row[1].strip()
+
+                        #     # Make sure we're dealing with an asset label we recognize
+                        #     if current_label not in label_percentages or label_percentages[current_label] is None:
+                        #         label_percentages[current_label] = 0
+
+                        #     # Now you can safely add the float value
+                        #     label_percentages[current_label] += float(row[4])
 
                         print(label_percentages)
                         total = sum(value for value in label_percentages.values() if value is not None)
 
                         # print('\n',"The sum of the investment portfolio is:", total , '\n')
-
+    # breakpoint()
     return label_percentages
 
 def sum_assets(assets_part, assets_groups):

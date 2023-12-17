@@ -137,7 +137,7 @@ def write_to_sheet(pdf_link, spreadsheet):
 if __name__ == '__main__':
     # enter the name of the excel file
     # excel_file = 'OCM Asset Management.xlsm'
-    excel_file = '9_milestone\OCM Asset Management.xlsm'
+    excel_file = '9_milestone\OCM\OCM Asset Management.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)

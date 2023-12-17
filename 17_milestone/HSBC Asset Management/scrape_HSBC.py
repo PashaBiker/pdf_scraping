@@ -36,22 +36,21 @@ def scrape_links(file_urls):
                 # print(request_content)
                 soup = BeautifulSoup(response.content, 'html.parser')
                 div_tag = soup.find('div', class_='sidebar sidebar--hero-overlap')
-                urls_dict = {}
                 # Extracting all anchor tags
                 for a_tag in div_tag.find_all('a'):
                     # Removing any unwanted inner tags from the anchor tag's text
                     for tag in a_tag.find_all(['span', 'i']):
                         tag.extract()
                     # Adding the text and href to the dictionary
-                    urls_dict[a_tag.text.strip()] = a_tag['href']
+                    pdf_links[a_tag.text.strip()] = a_tag['href']
 
 
         except requests.exceptions.RequestException as e:
             print("Error fetching the URL:", e)
         except Exception as e:
             print("An error occurred:", e)
-        print(urls_dict)
-    return urls_dict
+        print(pdf_links)
+    return pdf_links
 
 
 def get_urls(spreadsheet):

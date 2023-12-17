@@ -265,7 +265,7 @@ if __name__ == '__main__':
 # TODO UNCOMENT FIRST
 # TODO UNCOMENT FIRST
 
-    # pdf_folder = download_pdfs(excel_file) 
+    pdf_folder = download_pdfs(excel_file) 
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 

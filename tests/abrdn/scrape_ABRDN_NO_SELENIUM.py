@@ -52,19 +52,36 @@ def scrape_links(file_urls):
             # print(response.content)
 
             # Parse the HTML content of the page
+            # soup = BeautifulSoup(response.content, 'html.parser')
+
+            # # Find all relevant div tags
+            # divs = soup.find_all('div', class_='faded-underline col-12 py-3')
+
+            # # Extract the necessary information from each div
+            # for div in divs:
+            #     a_tag = div.find('a', class_='sitecore-link')
+            #     if a_tag:
+            #         text = a_tag.get_text(strip=True).replace('\ufeff','')
+            #         href = a_tag.get('href')
+            #         pdf_links[text] = href
+            # Assuming 'response.content' contains your HTML content
             soup = BeautifulSoup(response.content, 'html.parser')
 
             # Find all relevant div tags
             divs = soup.find_all('div', class_='faded-underline col-12 py-3')
 
+            pdf_links = {}  # Dictionary to store the links
+
             # Extract the necessary information from each div
             for div in divs:
                 a_tag = div.find('a', class_='sitecore-link')
                 if a_tag:
-                    text = a_tag.get_text(strip=True).replace('\ufeff','')
+                    text = a_tag.get_text(strip=True).replace('\ufeff', '')
                     href = a_tag.get('href')
-                    pdf_links[text] = href
-
+                    
+                    # Check if the text is already in the pdf_links dictionary
+                    if text not in pdf_links:
+                        pdf_links[text] = href 
                    
         except requests.exceptions.RequestException as e:
             print("Error fetching the URL:", e)
@@ -125,7 +142,7 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    excel_file = 'abrdn.xlsm'
+    excel_file = 'tests/abrdn/abrdn.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)
