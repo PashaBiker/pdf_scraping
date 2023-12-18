@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 import requests
 
 
@@ -23,4 +24,15 @@ response = requests.get(
     headers=headers,
 )
 
-print(response.content)
+# print(response.content)
+html_сontent = response.content
+
+soup = BeautifulSoup(html_сontent, 'html.parser')
+
+# Находим последний элемент <script>
+last_script = soup.find_all('script')[-13]
+
+# Выводим содержимое последнего элемента <script>
+last_script_script = last_script.string
+
+print(last_script_script)
