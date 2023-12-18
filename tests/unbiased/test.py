@@ -1,3 +1,5 @@
+import json
+import re
 from bs4 import BeautifulSoup
 import requests
 
@@ -29,10 +31,29 @@ html_сontent = response.content
 
 soup = BeautifulSoup(html_сontent, 'html.parser')
 
-# Находим последний элемент <script>
-last_script = soup.find_all('script')[-13]
+# # Находим последний элемент <script>
+# last_script = soup.find_all('script')[-13]
 
-# Выводим содержимое последнего элемента <script>
-last_script_script = last_script.string
+# # Выводим содержимое последнего элемента <script>
+# last_script_script = last_script.string
 
-print(last_script_script)
+# print(last_script_script)
+
+
+# Find the script tag
+# Find the script tag
+script_tag = soup.find('script', string=re.compile('__NUXT__'))
+
+# Extract the JavaScript object
+script_content = script_tag.string
+
+# file_name = "extracted_script.html"  # You can change the file name as needed
+# with open(file_name, 'w', encoding='utf-8') as file:
+#     file.write(script_content)
+profile_slugs = re.findall(r'profileSlug:\s*"([^"]+)"', script_content)
+
+# print(profile_slugs)
+
+for url_part in profile_slugs:
+    url = f'https://www.unbiased.co.uk/profile/financial-adviser/{url_part}'
+    print(url)
