@@ -36,19 +36,22 @@ def scrape_links(file_urls):
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
             }
 
-            response = requests.get('https://www.brewin.co.uk/intermediaries/managed-portfolio-service/mps-literature-and-factsheets', headers=headers)
-
-
+            response = requests.get(url, headers=headers)
 
             page_source = response.text
             soup = BeautifulSoup(page_source, "html.parser")
             
-            factsheets = {a.text: a['href'] for a in soup.find_all('a', class_='link-cta link-download')}
-            # Initialize pdf_links as a list
-            # pdf_links = []
+            base_url = "https://www.brewin.co.uk"  # Replace with the base URL of your website
 
-            # Append each item to the pdf_links list
+            factsheets = {a.text: a['href'] for a in soup.find_all('a', class_='link-cta link-download')}
+
+            # pdf_links = []  # Initialize pdf_links as a list
+
             for name, full_link in factsheets.items():
+                # Check if the link is a relative URL
+                if not full_link.startswith("http://") and not full_link.startswith("https://"):
+                    full_link = base_url + full_link  # Prepend the base URL to make it absolute
+
                 pdf_links.append({name: full_link})
 
         except requests.exceptions.RequestException as e:
@@ -56,6 +59,7 @@ def scrape_links(file_urls):
         except Exception as e:
             print("An error occurred:", e)
         # print(pdf_links)
+        # breakpoint()
     return pdf_links
 
 
@@ -109,8 +113,8 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    excel_file = 'Brewin Dolphin.xlsm'
-    # excel_file = 'tests/brewin/Brewin Dolphin.xlsm'
+    # excel_file = 'Brewin Dolphin.xlsm'
+    excel_file = 'tests/brewin/Brewin Dolphin.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)
