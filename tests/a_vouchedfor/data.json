@@ -1,0 +1,621 @@
+{
+    "aggregate_data": {
+        "count": 1201,
+        "remaining": 1196
+    },
+    "data": [
+        {
+            "id": 34746,
+            "title": "Mr",
+            "first_name": "Nick",
+            "last_name": "Swartout",
+            "firm_name": "Bray Wealth Management",
+            "is_contactable": true,
+            "home_town": "Woking",
+            "phone_number": "03300388942",
+            "review_average_score": 4.9,
+            "review_count": 156,
+            "service_review_count": 0,
+            "travel_distance": "20",
+            "distance": 2.4759738,
+            "attribute_ids": {
+                "investment_and_mortgage_advice": [
+                    {
+                        "id": 555,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Limited"
+                    },
+                    {
+                        "id": 551,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Restricted"
+                    }
+                ],
+                "promotions": [
+                    {
+                        "id": 415,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Free 30 minute initial consultation"
+                    }
+                ],
+                "services": [
+                    {
+                        "id": 397,
+                        "state": 2,
+                        "parent_attribute_id": null,
+                        "name": "Investments and Savings"
+                    },
+                    {
+                        "id": 395,
+                        "state": 4,
+                        "parent_attribute_id": null,
+                        "name": "Retirement income (annuities, drawdown)"
+                    },
+                    {
+                        "id": 557,
+                        "state": 2,
+                        "parent_attribute_id": null,
+                        "name": "Pension Transfers - Non Specialist"
+                    },
+                    {
+                        "id": 558,
+                        "state": 4,
+                        "parent_attribute_id": null,
+                        "name": "Inheritance Planning"
+                    },
+                    {
+                        "id": 391,
+                        "state": 4,
+                        "parent_attribute_id": null,
+                        "name": "Insurance & Protection"
+                    }
+                ],
+                "wealth_and_mortgage_criteria": [
+                    {
+                        "id": 404,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Over \u00a3100,000"
+                    }
+                ]
+            },
+            "permalink": {
+                "url": "financial-advisor-ifa/woking/034746-nick-swartout",
+                "vertical": "financial-advisor-ifa",
+                "city": "Guildford",
+                "town": "Woking"
+            },
+            "photos": {
+                "thumb": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64999c9aa3314.png",
+                "thumb_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64999c9ab05c3.png",
+                "small": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64999c9aca413.png",
+                "small_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64999c9adac6f.png",
+                "standard": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64999c9b00bc4.png",
+                "standard_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64999c9b196c2.png"
+            },
+            "review_statistics": [
+                {
+                    "type": "life_stage_early_career",
+                    "value": "3"
+                },
+                {
+                    "type": "life_stage_mid_life",
+                    "value": "2"
+                },
+                {
+                    "type": "life_stage_pre_retirement",
+                    "value": "18"
+                },
+                {
+                    "type": "life_stage_early_at_retirement",
+                    "value": "48"
+                },
+                {
+                    "type": "life_stage_later_life",
+                    "value": "24"
+                }
+            ],
+            "verified_since": "2020-06-08 00:00:00",
+            "type": "fa_restricted",
+            "about": "A successful and professional financial planner who strives to deliver the best outcome for every client. I am a Chartered Financial Planner and the Managing Director of Bray Wealth Management which was established in 1984.\n\nOkay, but what do I do?\n\nI look after individuals and their families to help generate, protect and pass on their wealth to the next generation by focusing on them and them only. I like to get to know the real person and what it is they are looking to achieve by asking deep and meaningful questions. Once I feel I know more about the individual and their family, and I feel I can help them, we will then and only then start building their financial plan. Everything we do around financial planning will hinge from this plan and I will be there to guide and coach them through the good and the bad times. I find clients are only concerned with their problems and have little appetite for someone who is only interested in pushing their solutions. \nI believe in building long-term trusted relationships with my clients. I like working with a limited number of key individuals and their families to ensure I can provide them with the right amount time for them to have confidence in their future.\n\nBeing a client means:\n\nYou have a highly qualified professional expert who cares about you and your family.\nYou feel financially well organised and can participate in the relationship.\nYou are committed to the relationship and are willing to be held to account should your behaviour start to compromise your financial plan.\nYou will have the support of a dedicated friendly team who share over 70 years of experience of looking after valued clients.  \n\nI understand that life is short, and time is precious which is why I find it hugely rewarding knowing my clients can go about their daily lives with the knowledge they have a plan and they feel confident about their future.\n\nApproved by The Openwork Partnership on 1st February 2023.",
+            "review_first_impression_count_in_12_months": "70",
+            "firm_id": "1377",
+            "is_top_rated": true
+        },
+        {
+            "id": 63143,
+            "title": "Mr",
+            "first_name": "Boban",
+            "last_name": "Sebastian",
+            "firm_name": "Sterling Street",
+            "is_contactable": true,
+            "home_town": "Woking",
+            "phone_number": "03300388940",
+            "review_average_score": 5,
+            "review_count": 120,
+            "service_review_count": 0,
+            "travel_distance": "80",
+            "distance": 1.7848812,
+            "attribute_ids": {
+                "investment_and_mortgage_advice": [
+                    {
+                        "id": 555,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Limited"
+                    },
+                    {
+                        "id": 552,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "None"
+                    }
+                ],
+                "services": [
+                    {
+                        "id": 392,
+                        "state": 2,
+                        "parent_attribute_id": null,
+                        "name": "Mortgages"
+                    },
+                    {
+                        "id": 391,
+                        "state": 4,
+                        "parent_attribute_id": null,
+                        "name": "Insurance & Protection"
+                    }
+                ],
+                "wealth_and_mortgage_criteria": [
+                    {
+                        "id": 408,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Any level"
+                    },
+                    {
+                        "id": 402,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Any level"
+                    }
+                ]
+            },
+            "permalink": {
+                "url": "protection-advisor/woking/063143-boban-sebastian",
+                "vertical": "mortgage-advisor",
+                "city": "Guildford",
+                "town": "Woking"
+            },
+            "photos": {
+                "thumb": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5fc68d0a46066.png",
+                "thumb_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5fc68d0a54b6c.png",
+                "small": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5fc68d0a65fb2.png",
+                "small_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5fc68d0a70555.png",
+                "standard": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5fc68d0a87537.png",
+                "standard_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5fc68d0a98354.png"
+            },
+            "review_statistics": [
+                {
+                    "type": "life_stage_early_career",
+                    "value": "39"
+                },
+                {
+                    "type": "life_stage_mid_life",
+                    "value": "54"
+                },
+                {
+                    "type": "life_stage_pre_retirement",
+                    "value": "7"
+                },
+                {
+                    "type": "life_stage_early_at_retirement",
+                    "value": "0"
+                },
+                {
+                    "type": "life_stage_later_life",
+                    "value": "0"
+                }
+            ],
+            "verified_since": "2020-11-16 00:00:00",
+            "type": "mortgage_limited",
+            "about": "I work as a Mortgage and Protection Adviser for Sterling Street Ltd part of Openwork Limited, which specialises in Mortgage and financial protection for individuals and families across the UK. I joined the business in January 2020 and am qualified to advise on a wide range of mortgage products and cover options. Getting correct advise at the time of mortgage makes big impact in life. Being better protected can make a massive difference in the event of serious injury, sickness or death.  It\u2019s a privilege to be able to help customers and their families, who can benefit from much needed cover in times of need. \n\nWe work with most of the leading mortgage providers and  leading insurances providers \u2013 companies you can trust to be there should you have to make a claim. I\u2019m based in Woking but my customer base stretches much further than that. Whilst I would typically meet customers in their homes, at this time face-to-face meetings are being done online to help keep us safe. It\u2019s quite straightforward and we can meet using Zoom, Teams, Skype or a similar package. The wonders of technology!\n\n About Sterling Street: We\u2019re part of Openwork, which is one of the UK\u2019s largest networks of financial advisers. Our ethos is very much customer focused; we\u2019re committed to providing a service that surpasses expectations.  You\u2019ll find us friendly and easy to do business with. We operate to high standards of quality and are proud of the thousands of positive comments we get about the service provided by Advisers.\n\nSo, if you need any help with your mortgage, financial protection advice, whether it\u2019s personal cover for you or protection for your home or possessions, please get in touch. I\u2019m here to help \u2013 there\u2019s no obligation to buy.",
+            "review_first_impression_count_in_12_months": "66",
+            "firm_id": "9374",
+            "is_top_rated": true
+        },
+        {
+            "id": 35945,
+            "title": "Mr",
+            "first_name": "Graham",
+            "last_name": "Gibson",
+            "firm_name": "Fortis Financial Planning",
+            "is_contactable": true,
+            "home_town": "Guildford",
+            "phone_number": "03300388940",
+            "review_average_score": 5,
+            "review_count": 161,
+            "service_review_count": 0,
+            "travel_distance": "80",
+            "distance": 4.004904,
+            "attribute_ids": {
+                "investment_and_mortgage_advice": [
+                    {
+                        "id": 555,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Limited"
+                    },
+                    {
+                        "id": 552,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "None"
+                    }
+                ],
+                "promotions": [
+                    {
+                        "id": 588,
+                        "state": null,
+                        "parent_attribute_id": 0,
+                        "name": "Free Financial Plan"
+                    },
+                    {
+                        "id": 415,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Free 30 minute initial consultation"
+                    }
+                ],
+                "services": [
+                    {
+                        "id": 392,
+                        "state": 2,
+                        "parent_attribute_id": null,
+                        "name": "Mortgages"
+                    },
+                    {
+                        "id": 394,
+                        "state": 4,
+                        "parent_attribute_id": null,
+                        "name": "Equity Release"
+                    }
+                ],
+                "wealth_and_mortgage_criteria": [
+                    {
+                        "id": 408,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Any level"
+                    }
+                ]
+            },
+            "permalink": {
+                "url": "mortgage-advisor/guildford/035945-graham-gibson",
+                "vertical": "mortgage-advisor",
+                "city": "Guildford",
+                "town": "Guildford"
+            },
+            "photos": {
+                "thumb": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5ecfc2a0ed425.png",
+                "thumb_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5ecfc2a10ee73.png",
+                "small": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5ecfc2a121f7f.png",
+                "small_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5ecfc2a134031.png",
+                "standard": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5ecfc2a14eae7.png",
+                "standard_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/5ecfc2a16563e.png"
+            },
+            "review_statistics": [
+                {
+                    "type": "life_stage_early_career",
+                    "value": "25"
+                },
+                {
+                    "type": "life_stage_mid_life",
+                    "value": "45"
+                },
+                {
+                    "type": "life_stage_pre_retirement",
+                    "value": "25"
+                },
+                {
+                    "type": "life_stage_early_at_retirement",
+                    "value": "5"
+                },
+                {
+                    "type": "life_stage_later_life",
+                    "value": "2"
+                }
+            ],
+            "verified_since": "2020-06-01 17:25:29",
+            "type": "mortgage_limited",
+            "about": "I have been a financial adviser since 1988 and in the past have provided advice in all areas of financial planning including mortgages, protection, pensions and investments. My passion has always been mortgages so I no longer advise on pension or investment planning and I leave this to my colleague and co-director Steve Burgess so I can focus on providing the quality of mortgage advice and service that my clients expect and deserve.\n\nI first started in the industry working for a large financial services company where I had a very successful career and learnt a lot of the skills and knowledge that I still use today. I have now been a dedicated mortgage broker for over 20 years and have had the fortune of helping thousands of clients from all walks of life.\n\nThe advice I provide covers all areas of property finance from first time buyers to professional landlords and everything in between. I get as much satisfaction from helping first time buyers take their first step into property ownership and guiding them through all the options available to them as I do with working with professional landlords and helping them to maximise their profits from their multi-million pound portfolios.  \n\nI always strive to work with the ethos of our company motto - Service, Trust and Knowledge. I aim to provide the very best service that I and my support staff can provide and back this up with my wealth of experience and knowledge gained over many years and continue to gain. Finally my clients can trust in me to provide the right solutions for them in a timely and efficient manner.  \n\nMy spare time tends to revolve around my family, martial arts, football and the odd round of golf when I can find time.\n\nSome buy to let mortgages are not regulated by the Financial Conduct Authority\n\nYOUR PROPERTY MAY BE REPOSSESSED IF YOU DO NOT KEEP UP REPAYMENTS ON YOUR MORTGAGE\n\nApproved by The Openwork Partnership on 09/08/2023",
+            "review_first_impression_count_in_12_months": "38",
+            "firm_id": "8071",
+            "is_top_rated": true
+        },
+        {
+            "id": 855,
+            "title": "Mr",
+            "first_name": "John",
+            "last_name": "Findlay",
+            "firm_name": "Bray Wealth Management",
+            "is_contactable": true,
+            "home_town": "Chobham",
+            "phone_number": "03300388938",
+            "review_average_score": 4.8,
+            "review_count": 74,
+            "service_review_count": 0,
+            "travel_distance": "25",
+            "distance": 2.4759738,
+            "attribute_ids": {
+                "investment_and_mortgage_advice": [
+                    {
+                        "id": 556,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "None"
+                    },
+                    {
+                        "id": 551,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Restricted"
+                    }
+                ],
+                "promotions": [
+                    {
+                        "id": 416,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Free one hour initial consultation"
+                    }
+                ],
+                "services": [
+                    {
+                        "id": 397,
+                        "state": 2,
+                        "parent_attribute_id": null,
+                        "name": "Investments and Savings"
+                    },
+                    {
+                        "id": 393,
+                        "state": 2,
+                        "parent_attribute_id": null,
+                        "name": "Pensions"
+                    },
+                    {
+                        "id": 392,
+                        "state": 1,
+                        "parent_attribute_id": null,
+                        "name": "Mortgages"
+                    },
+                    {
+                        "id": 395,
+                        "state": 4,
+                        "parent_attribute_id": null,
+                        "name": "Retirement income (annuities, drawdown)"
+                    },
+                    {
+                        "id": 557,
+                        "state": 2,
+                        "parent_attribute_id": null,
+                        "name": "Pension Transfers - Non Specialist"
+                    },
+                    {
+                        "id": 558,
+                        "state": 4,
+                        "parent_attribute_id": null,
+                        "name": "Inheritance Planning"
+                    },
+                    {
+                        "id": 391,
+                        "state": 4,
+                        "parent_attribute_id": null,
+                        "name": "Insurance & Protection"
+                    }
+                ],
+                "wealth_and_mortgage_criteria": [
+                    {
+                        "id": 408,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Any level"
+                    },
+                    {
+                        "id": 402,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Any level"
+                    }
+                ]
+            },
+            "permalink": {
+                "url": "financial-advisor-ifa/woking/0855-john-findlay",
+                "vertical": "financial-advisor-ifa",
+                "city": "Guildford",
+                "town": "Woking"
+            },
+            "photos": {
+                "thumb": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64998cccaa961.png",
+                "thumb_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64998cccba466.png",
+                "small": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64998ccccdb7c.png",
+                "small_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64998ccce98d4.png",
+                "standard": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64998ccd0e10f.png",
+                "standard_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/64998ccd2de0a.png"
+            },
+            "review_statistics": [
+                {
+                    "type": "life_stage_early_career",
+                    "value": "2"
+                },
+                {
+                    "type": "life_stage_mid_life",
+                    "value": "6"
+                },
+                {
+                    "type": "life_stage_pre_retirement",
+                    "value": "22"
+                },
+                {
+                    "type": "life_stage_early_at_retirement",
+                    "value": "54"
+                },
+                {
+                    "type": "life_stage_later_life",
+                    "value": "14"
+                }
+            ],
+            "verified_since": "2020-05-22 00:00:00",
+            "type": "fa_restricted",
+            "about": "I've been advising clients for more than 13 years, previously for Lloyds and now for Bray Wealth Management, which I joined in July 2015. \n\nMy aim as a Financial Planner is to provide excellent customer service at all times and help people make important financial decisions throughout their working lives, into retirement and beyond.  \n\nHow do I help clients?\n-\tHelp quantify financial and life goals\n-\tWork out a realistic plan to achieve these\n-\tImplement a strategy to work towards this\n-\tProvide an ongoing service to ensure plans remain on track \n\nTypically my client\u2019s goals include:\n-\tWorking towards financial independence in retirement\n-\tMaking the most of a pension pot\n-\tSaving for children\u2019s University fees \n-\tProtecting a family\u2019s finances against the impact of a family catastrophe\n\nI've been an Education Champion for the Personal Finance Society for two years, and have visited several schools, including Eton College, to help sixth formers learn about personal finance.\n\n\nDeveloping trust is key to my role and as such I offer a couple of meetings at no cost to you to allow me to understand your plans and explore how I can help you.",
+            "review_first_impression_count_in_12_months": "29",
+            "firm_id": "1377",
+            "is_top_rated": true
+        },
+        {
+            "id": 27790,
+            "title": "Mr",
+            "first_name": "Lloyd",
+            "last_name": "French",
+            "firm_name": "Delaunay Wealth Management Ltd",
+            "is_contactable": true,
+            "home_town": "WOKING",
+            "phone_number": "03300388939",
+            "review_average_score": 4.9,
+            "review_count": 84,
+            "service_review_count": 0,
+            "travel_distance": "80",
+            "distance": 1.1271962,
+            "attribute_ids": {
+                "investment_and_mortgage_advice": [
+                    {
+                        "id": 556,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "None"
+                    },
+                    {
+                        "id": 550,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Independent"
+                    }
+                ],
+                "promotions": [
+                    {
+                        "id": 588,
+                        "state": null,
+                        "parent_attribute_id": 0,
+                        "name": "Free Financial Plan"
+                    },
+                    {
+                        "id": 416,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Free one hour initial consultation"
+                    }
+                ],
+                "services": [
+                    {
+                        "id": 397,
+                        "state": 1,
+                        "parent_attribute_id": null,
+                        "name": "Investments and Savings"
+                    },
+                    {
+                        "id": 393,
+                        "state": 1,
+                        "parent_attribute_id": null,
+                        "name": "Pensions"
+                    },
+                    {
+                        "id": 395,
+                        "state": 3,
+                        "parent_attribute_id": null,
+                        "name": "Retirement income (annuities, drawdown)"
+                    },
+                    {
+                        "id": 557,
+                        "state": 1,
+                        "parent_attribute_id": null,
+                        "name": "Pension Transfers - Non Specialist"
+                    },
+                    {
+                        "id": 558,
+                        "state": 3,
+                        "parent_attribute_id": null,
+                        "name": "Inheritance Planning"
+                    },
+                    {
+                        "id": 391,
+                        "state": 3,
+                        "parent_attribute_id": null,
+                        "name": "Insurance & Protection"
+                    },
+                    {
+                        "id": 621,
+                        "state": 3,
+                        "parent_attribute_id": null,
+                        "name": "Long Term Care"
+                    }
+                ],
+                "wealth_and_mortgage_criteria": [
+                    {
+                        "id": 406,
+                        "state": null,
+                        "parent_attribute_id": null,
+                        "name": "Over \u00a3500,000"
+                    }
+                ]
+            },
+            "permalink": {
+                "url": "financial-advisor-ifa/woking/027790-lloyd-french",
+                "vertical": "financial-advisor-ifa",
+                "city": "Guildford",
+                "town": "Woking"
+            },
+            "photos": {
+                "thumb": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/636cd3745ee00.png",
+                "thumb_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/636cd3746c5a9.png",
+                "small": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/636cd3747f948.png",
+                "small_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/636cd3748eb08.png",
+                "standard": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/636cd374aa2ba.png",
+                "standard_retina": "https://s3.eu-west-1.amazonaws.com/professionals.vouchedfor.co.uk/636cd374bffe6.png"
+            },
+            "review_statistics": [
+                {
+                    "type": "peer_review_count",
+                    "value": "0"
+                },
+                {
+                    "type": "life_stage_early_career",
+                    "value": "0"
+                },
+                {
+                    "type": "life_stage_mid_life",
+                    "value": "20"
+                },
+                {
+                    "type": "life_stage_pre_retirement",
+                    "value": "35"
+                },
+                {
+                    "type": "life_stage_early_at_retirement",
+                    "value": "35"
+                },
+                {
+                    "type": "life_stage_later_life",
+                    "value": "8"
+                }
+            ],
+            "verified_since": "2021-01-25 00:00:00",
+            "type": "ifa",
+            "about": "Financial Planner and Founder of Delaunay Wealth | Expert financial coaching and life planning for business owners, senior executives, and active retirees | Proudly voted a VouchedFor Top Rated Adviser in 2021, 2022, 2023\n\nIn 2011, after spending the previous 15 years as a financial adviser, it felt like the right time to start my own practice. \n\nDelaunay Wealth was established the following year and, since then, we have helped people like you improve their financial wellbeing and reach their life goals.\n\nMy approach isn\u2019t based on books and theory. I\u2019ve really been in your shoes, and I know exactly what you\u2019re going through. My life experiences have moulded me into the person and, crucially, the financial planner I am today.\n\nI pride myself on my honesty and empathy. I am direct, yet unafraid to offer clear, calm advice on any \u201cdifficult\u201d elements in a financial planning strategy. To put it simply, I am authentic, and confident that there\u2019s no one better equipped to handle your finances.\n\nIn my spare time, I strength train at the gym, swim, and cycle. My wife and I are social butterflies, and enjoy nothing more than going out with friends or hosting dinner.\n\nNow, let\u2019s talk a little more about Delaunay Wealth\u2026\n\nWe provide strategic financial guidance to prosperous, family-oriented people who wish to engage in a long-term relationship with their trusted financial planner.\n\nPeople from all walks of life come to us with their financial concerns.\n\nSenior executives\n\nBusiness owners\n\nActive retirees\n\nOur work is focused on making the complex simple, exceeding expectations, and delivering fantastic value every single time.\n\nMore than 90% of our clients are referred to us this way.\n\nWe collaborate with our professional connections to support their clients with financial goals, strengthening the relationship they already have together.\n\nShare specialist knowledge and experience\n\nCollaboration, as opposed to competition\n\nBetter support clients together\n\nMy hand-picked team embrace and adapt to change, and question challenges to unlock creativity at every turn.\n\nFrom compliance to paraplanning, operations to technical support\u2026 there\u2019s amazing beauty and power in the team I have built around me.\n\nWe don\u2019t expect you just to take our word for it!\n\n100% of our clients are satisfied that we understand their needs and financial objectives ?\n\n100% of our clients say that we have helped or will help to achieve their financial objectives ?\n\n93% of our clients would recommend us to friends, family, and work colleagues ?\n\nFinancial planning is an ongoing journey, but an incredibly rewarding one.\n\nYou\u2019ll find clarity at every stage of the process, and we\u2019ll get to know you very well, forming a long-term relationship as we go on your journey together.\n\nOur door is always open to welcome new clients.\n\nIf we sound like the right fit for you, or you have any questions, get in touch today.\n\n0345 50 53 500 (telephone)\n\n07355 094564 (WhatsApp)\n\nl.french@delaunaywealth.com (email)",
+            "review_first_impression_count_in_12_months": "14",
+            "firm_id": "7051",
+            "is_top_rated": true
+        }
+    ]
+}
