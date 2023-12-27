@@ -14,26 +14,26 @@ from PIL import Image
 import pytesseract
 import os
 
-excel_file = 'tests/aj_new/AJ Bell.xlsm'
-pdf_folder = 'tests/aj_new/AJ Bell PDFs'
+excel_file = 'AJ Bell.xlsm'
+pdf_folder = 'AJ Bell PDFs'
 
 
-# poppler_path = r'C:\Users\26\Documents\IONOS HiDrive\Mabel Insights\DFM\poppler-23.07.0\Library\bin'
-poppler_path = r'13_milestone\AJ\poppler-23.07.0\Library\bin'
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-# pytesseract.pytesseract.tesseract_cmd = r'C:\Users\26\Documents\IONOS HiDrive\Mabel Insights\DFM\Tesseract-OCR\tesseract.exe'
+# poppler_path = r'13_milestone\AJ\poppler-23.07.0\Library\bin'
+# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+poppler_path = r'C:\Users\26\Documents\IONOS HiDrive\Mabel Insights\DFM\poppler-23.07.0\Library\bin'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Users\26\Documents\IONOS HiDrive\Mabel Insights\DFM\Tesseract-OCR\tesseract.exe'
 
 
 
-directory = "tests/aj_new/pictures\\"
+directory = "pictures\\"
 
 def get_data(file):
     print("[INFO] Converting PDF to images...")
     pages = pdf2image.convert_from_path(file,
                                         dpi=400, 
-                                        # first_page=2,
-                                        first_page=58,
-                                        last_page=59,
+                                        first_page=2,
+                                        # first_page=58,
+                                        # last_page=59,
                                         poppler_path=poppler_path)
 
     if not os.path.exists(directory):
@@ -74,6 +74,7 @@ def get_data(file):
             .replace('Pactive MPS 5 2.','Pactive MPS 5 2.19')
             .replace(' . 7 Japan equity','6.00% Japan equity')
             .replace('7 Asia Pacific ex-lapan equity','7.00% Asia Pacific ex-Japan equity')
+            .replace('Uke (Cr','OCF')
             for line in text.split('\n') if line.strip() != ''
         ]
         # Check if page is even using its index
@@ -102,11 +103,21 @@ def get_data(file):
             return s[:match.end()]
         return s
     filename = [
-    remove_after_number(page[1]) if re.search(r"\d+", page[1]) else 
-    (remove_after_number(page[2]) if re.search(r"\d+", page[2]) else 
-    remove_after_number(page[3]))
+    next((remove_after_number(page[j]) for j in range(1, 4) if "MPS" in page[j]), 
+         remove_after_number(page[1]) if re.search(r"\d+", page[1]) else 
+         (remove_after_number(page[2]) if re.search(r"\d+", page[2]) else 
+          remove_after_number(page[3])))
     for i, page in enumerate(data) if i % 2 == 0
     ]
+    
+    
+    # filename = [
+    # remove_after_number(page[1]) if re.search(r"\d+", page[1]) else 
+    # (remove_after_number(page[2]) if re.search(r"\d+", page[2]) else 
+    # remove_after_number(page[3]))
+    # for i, page in enumerate(data) if i % 2 == 0
+    # ]
+
     print("[INFO] Extracting OCF values...")
     OCF = []
     for page in data:
@@ -210,13 +221,16 @@ def get_data(file):
     result2 = {}
     for i, name in enumerate(filename):  # assuming filename is a list of filenames
         Y1, Y2, Y3, Y4, Y5 = None, None, None, None, None
-
+        
         year_values = performance_values[i]
-        Y1 = float(year_values[0])/100 if len(year_values) > 0 else Y1
-        Y2 = float(year_values[1])/100 if len(year_values) > 1 else Y2
-        Y3 = float(year_values[2])/100 if len(year_values) > 2 else Y3
-        Y4 = float(year_values[3])/100 if len(year_values) > 3 else Y4
-        Y5 = float(year_values[4])/100 if len(year_values) > 4 else Y5    
+        if year_values:
+            Y1 = float(year_values[0])/100 if len(year_values) > 0 else Y1
+            Y2 = float(year_values[1])/100 if len(year_values) > 1 else Y2
+            Y3 = float(year_values[2])/100 if len(year_values) > 2 else Y3
+            Y4 = float(year_values[3])/100 if len(year_values) > 3 else Y4
+            Y5 = float(year_values[4])/100 if len(year_values) > 4 else Y5    
+        else:
+            Y1 = None
 
         result2[name] = {
             'Date': Date[i],
@@ -362,7 +376,7 @@ def write_to_sheet(data, excel_file):
                 cell = sheet.range(
                     f'{column_letter_from_index(column_index)}{row}')
                 cell.value = float(value) / 100
-                cell.number_format = '0,00%'
+                cell.number_format = '0.00%'
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
