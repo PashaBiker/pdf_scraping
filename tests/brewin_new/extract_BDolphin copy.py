@@ -11,8 +11,8 @@ import fitz  # PyMuPDF
 import threading
 from queue import Queue
 
-excel_file = 'Brewin Dolphin.xlsm'
-pdf_folder = "Brewin Dolphin PDFs"
+excel_file = 'tests/brewin_new/Brewin Dolphin.xlsm'
+pdf_folder = "tests/brewin_new/Brewin Dolphin PDFs"
 
 
 def get_voyager(pdf_path):
@@ -371,7 +371,7 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
             # if key.strip() != 'Date':
             #     sheet.cells(row, column).value = float(
             #         data[key].replace('%', '').replace(',', '')) / 100
-            #     sheet.cells(row, column).number_format = '0.00%'
+            #     sheet.cells(row, column).number_format = '0,00%'
             if key.strip() != 'Date':
                 try:
                     # Remove '%' and ',' from the string and check if it's not empty
@@ -379,16 +379,16 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
                     if value_str.strip():
                         # Convert the cleaned string to float and divide by 100
                         sheet.cells(row, column).value = float(value_str) / 100
-                        sheet.cells(row, column).number_format = '0.00%'
+                        sheet.cells(row, column).number_format = '0,00%'
                     else:
                         # Set a default value for empty strings
                         sheet.cells(row, column).value = None
-                        sheet.cells(row, column).number_format = '0.00%'
+                        sheet.cells(row, column).number_format = '0,00%'
                 except ValueError as e:
                     # Log the error and set a default value in case of conversion failure
                     print(f"Error converting '{data[key]}' to float: {e}")
                     sheet.cells(row, column).value = None
-                    sheet.cells(row, column).number_format = '0.00%'
+                    sheet.cells(row, column).number_format = '0,00%'
 
         column_headings = sheet.range('A1').expand('right').value
 
@@ -414,7 +414,7 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
             else:
                 cell.value = float(performance[key].replace(
                     ',', '').replace('%', '')) / 100
-            cell.number_format = '0.00%'
+            cell.number_format = '0,00%'
 
         sheet = wb.sheets[3]
 
@@ -443,7 +443,7 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(value.replace(
                         ',', '').replace('%', '')) / 100
-                    cell.number_format = '0.00%'
+                    cell.number_format = '0,00%'
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
@@ -467,6 +467,10 @@ def column_letter_from_index(index):
 
 if __name__ == '__main__':
 
+    # TODO: comment it
+    # TODO: comment it
+    # TODO: comment it
+
     pdf_folder = download_pdfs(excel_file)
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
@@ -481,5 +485,7 @@ if __name__ == '__main__':
 
         except Exception as e:
             print(f"An error occurred in file {pdf}: {str(e)}")
+
+        # print('Portfolio Cost:', portfolio_cost + '\t' + pdf)
 
     print('\nDone!')
