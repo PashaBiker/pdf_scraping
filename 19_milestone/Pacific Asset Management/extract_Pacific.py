@@ -224,7 +224,7 @@ def get_assets_groups_text(pdf_path):
                         'Fixed Income',
                         'Alternatives',
                         'Diversifying Assets',
-                        'Absolute Return',]
+                        ]
         
         # print(extracted_lines)
         # Initialize a dictionary to hold the asset percentages

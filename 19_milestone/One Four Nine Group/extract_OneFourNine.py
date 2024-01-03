@@ -84,6 +84,7 @@ def download_pdfs(spreadsheet):
 
     print('All PDFs downloaded!')
     return folder_name
+
 def get_data(pdf_path):
     def safe_get(lst, index, default=None):
             return lst[index] if index < len(lst) else default
@@ -92,25 +93,30 @@ def get_data(pdf_path):
         first_page = pdf.pages[0]
         first_page_text = first_page.extract_text().split('\n')
         second_page = pdf.pages[1]
-        
+
         # Get the page's width and height
         width = second_page.width
         height = second_page.height
-        
-        # Calculate x1 for 59.375% of the page width
-        x1 = 0.59575 * width
-        
+
+        # Calculate the coordinates for the top right part
+        x0 = (0.38 * width)  # Starting X coordinate (55% from the left)
+        y0 = (0.45 * height) # Starting Y coordinate (62% from the bottom, which is the top 38%)
+        x1 = width                   # Ending X coordinate (end of the page)
+        y1 = height                  # Ending Y coordinate (top of the page)
+
         # Define bounding box
-        bbox = (0, 0, x1, height)
-        
+        # The bounding box is defined as (x0, y0, x1, y1)
+        bbox = (x0, 0, x1, y0)
+
         # Crop the page
         cropped_page = second_page.crop(bbox)
-        
+
         # Extract text from the cropped page
         second_page_text = cropped_page.extract_text().split('\n')
 
-        # print(text)
+        # print(first_page_text)
         # print(second_page_text)
+        # breakpoint()
         for i,line in enumerate(first_page_text):
             if 'One Four Nine Fee' in line:
                 # print(line)
@@ -151,9 +157,13 @@ def get_data(pdf_path):
                 date_line = line.split('as of ')
                 date = date_line[-1]
 
+            if 'As of' in line:
+                date_line = line.split('As of ')
+                date = date_line[-1]
+
         # for i,line in enumerate(second_page_text):
         #     for line in second_page_text:
-        #         print()
+        # print(second_page_text)
 
         asset_labels_pattern = [
             'Cash',
@@ -173,30 +183,20 @@ def get_data(pdf_path):
         asset_labels = sorted(asset_labels_pattern, key=lambda x: len(x), reverse=True)
         asset_allocation = {}
 
-        for i, line in enumerate(second_page_text):
-            # Check if a line contains a percentage value
-            if "(" in line and "%" in line:
-                percentage = line.split('(')[-1].split(')')[0]
-                
-                # Check the current line for labels
-                asset_label_found = False
-                for label in asset_labels:
-                    if label in line:
-                        asset_allocation[label] = percentage.replace('%','')
-                        asset_label_found = True
-                        break
-                
-                # If no label is found in the current line, check the previous line
-                if not asset_label_found:
-                    # Get combined labels from multiple lines
-                    combined_previous = second_page_text[i-1]
-                    combined_current = " ".join(line.split(' ')[:-1])  # Excluding the last word which contains the percentage
-                    combined_label = combined_previous + " " + combined_current
-
-                    for label in asset_labels:
-                        if label in combined_label:
-                            asset_allocation[label] = percentage.replace('%','')
-                            break
+        for line in second_page_text:
+            matching_labels = [label for label in asset_labels if label in line]
+            if matching_labels:
+                # Choose the longest matching label
+                longest_label = max(matching_labels, key=len)
+                # Extract the percentage
+                percentage = line.split()[-1].replace('%','')
+                # Check if the percentage is a valid number
+                try:
+                    percentage = float(percentage)
+                    asset_allocation[longest_label] = percentage
+                except ValueError:
+                    # Skip if the percentage is not a valid number
+                    continue
 
         print(asset_allocation)
 
@@ -212,7 +212,6 @@ def clean_text(text):
 
 
 def write_to_sheet(OFN_fee, UF_fee, one_month, one_year, three_years, assets, spreadsheet, filename, date):
-# def write_to_sheet(OCF, management_fee, one_year, assets, spreadsheet, filename, date):
 
     try:
         app = xw.App(visible=False)
@@ -310,19 +309,12 @@ def column_letter_from_index(index):
 
 if __name__ == '__main__':
 
-    # enter the name of the excel file
-
-# TODO UNCOMENT FIRST
-# TODO UNCOMENT FIRST
-# TODO UNCOMENT FIRST
-
-    # pdf_folder = download_pdfs(excel_file) 
+    pdf_folder = download_pdfs(excel_file) 
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 
     for pdf in pdfs:
         try:
-            ''
             date, OFN_fee, UF_fee, one_month, one_year, three_years, asset_allocation = get_data(pdf)
             write_to_sheet(OFN_fee, UF_fee, one_month, one_year, three_years, asset_allocation, excel_file,pdf.split('\\')[-1].split('.')[0], date)
 

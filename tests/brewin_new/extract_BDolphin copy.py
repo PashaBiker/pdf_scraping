@@ -132,49 +132,6 @@ def get_voyager(pdf_path):
     print(portfolio)
     return portfolio
 
-# def download_pdfs(spreadsheet):
-#     print('Downloading PDFs...')
-
-#     app = xw.App(visible=False)
-#     wb = app.books.open(spreadsheet, update_links=False, read_only=False)
-#     sheet = wb.sheets[1]
-
-#     # Create the folder if it doesn't exist
-#     if not os.path.exists(pdf_folder):
-#         os.makedirs(pdf_folder)
-
-#     # Start from row 3 and iterate through the links in column B
-#     last_row = sheet.range('B' + str(sheet.cells.last_cell.row)).end('up').row
-#     for row in range(3, last_row+1):
-#         link = sheet.range(f'B{row}').value
-#         print(link)
-#         # Get the corresponding filename from column A
-#         filename = sheet.range(f'A{row}').value + '.pdf'
-#         print(filename)
-#         # Download the PDF from the link
-
-        
-
-#         response = requests.get(link, headers=headers)
-#         # If the filename is empty or None, use the last part of the link as the filename
-#         if not filename:
-#             filename = link.split('/')[-1]
-
-#         # Save the PDF in the folder
-#         file_path = os.path.join(pdf_folder, filename)
-
-#         # Write the content of the downloaded PDF to the file
-#         with open(file_path, 'wb') as f:
-#             f.write(response.content)
-
-#         print(f"PDF downloaded: {filename}")
-
-#     wb.close()
-#     app.quit()
-
-#     print('All PDFs downloaded!')
-#     return pdf_folder
-
 
 def download_worker(q, folder_name):
     headers = {
@@ -258,8 +215,16 @@ def get_data(file):
                 text = page.extract_text()
                 text = text.split('\n')
 
-                print(text)
+                print(text) 
                 # breakpoint()
+                tables = page.extract_tables()
+
+                # Process each table
+                for table in tables:
+                    # Check if the table has more than two rows and more than five columns
+                    if len(table) > 2 and all(len(row) > 5 for row in table):
+                        print("Table found on page:", page.page_number)
+                        main_table = table
 
                 for line in text:
                     if 'Investment Management ' in line:
@@ -273,8 +238,11 @@ def get_data(file):
                         OCF = line.split('OCF: ')[1]
                         # print(OCF)
 
+                pattern1 = re.compile(r'\b\d+\.\d+\b')
+                first_line_with_more_than_five_numbers = next((line for line in text if len(pattern1.findall(line)) > 5), None)
+
                 pattern = r"-?\d+\.\d+"
-                matches = re.findall(pattern, text[6])
+                matches = re.findall(pattern, first_line_with_more_than_five_numbers)
                 perf_values = matches
                 print(perf_values)
 
@@ -326,9 +294,31 @@ def get_data(file):
     else:
         # asset_values = {}
         asset_values = (get_voyager(file))
-    
-    performance = dict(zip(perf_labels, perf_values))
 
+    if '%' not in file:    
+        performance = dict(zip(perf_labels, perf_values))
+    else:
+        headers = main_table[0]
+        second_line = main_table[1]
+
+        # Removing '\n' and keeping the last part of each string in headers
+        cleaned_headers = [header.replace('\n', ' ') for header in headers]
+        # Creating a dictionary from the cleaned headers and the second line values
+        # performance = {header: value for header, value in zip(cleaned_headers, second_line)}
+        
+        performance_old = {header: value for header, value in zip(cleaned_headers[1:], second_line[1:])} 
+        performance_old.setdefault('3 Yr', None)
+        desired_keys = ['1 Mth', '3 Mths', '6 Mths', 'YTD', '1 Yr', '2 Yr', '3 Yr']
+        print(performance_old)
+        # Creating a new dictionary with only the desired keys and modifying 'Yr' to 'Yrs'
+        # performance = {key if not key.endswith('Yr') else key.replace('Yr', 'Yrs'): performance_old[key] for key in desired_keys}
+        new_dict = {
+            key if key == '1 Yr' or not key.endswith('Yr') else key.replace('Yr', 'Yrs'): performance_old[key]
+            for key in desired_keys
+        }
+        performance = new_dict
+        print(performance)
+        # breakpoint()
     data = {
         'Date': date,
         'AMC': Annual_management_charge,
@@ -371,7 +361,7 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
             # if key.strip() != 'Date':
             #     sheet.cells(row, column).value = float(
             #         data[key].replace('%', '').replace(',', '')) / 100
-            #     sheet.cells(row, column).number_format = '0,00%'
+            #     sheet.cells(row, column).number_format = '0.00%'
             if key.strip() != 'Date':
                 try:
                     # Remove '%' and ',' from the string and check if it's not empty
@@ -379,16 +369,16 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
                     if value_str.strip():
                         # Convert the cleaned string to float and divide by 100
                         sheet.cells(row, column).value = float(value_str) / 100
-                        sheet.cells(row, column).number_format = '0,00%'
+                        sheet.cells(row, column).number_format = '0.00%'
                     else:
                         # Set a default value for empty strings
                         sheet.cells(row, column).value = None
-                        sheet.cells(row, column).number_format = '0,00%'
+                        sheet.cells(row, column).number_format = '0.00%'
                 except ValueError as e:
                     # Log the error and set a default value in case of conversion failure
                     print(f"Error converting '{data[key]}' to float: {e}")
                     sheet.cells(row, column).value = None
-                    sheet.cells(row, column).number_format = '0,00%'
+                    sheet.cells(row, column).number_format = '0.00%'
 
         column_headings = sheet.range('A1').expand('right').value
 
@@ -405,17 +395,30 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
                 # Append the asset to column_headings
                 column_headings.append(key)
 
+        # for key in performance:
+        #     column_index = column_headings.index(key) + 1
+        #     cell = sheet.range(
+        #         f'{column_letter_from_index(column_index)}{row}')
+        #     if performance[key] == '-':
+        #         cell.value = '-'  # or some default value
+        #     else:
+        #         cell.value = float(performance[key].replace(
+        #             ',', '').replace('%', '')) / 100
+        #     cell.number_format = '0.00%'
         for key in performance:
             column_index = column_headings.index(key) + 1
-            cell = sheet.range(
-                f'{column_letter_from_index(column_index)}{row}')
-            if performance[key] == '-':
-                cell.value = '-'  # or some default value
+            cell = sheet.range(f'{column_letter_from_index(column_index)}{row}')
+            
+            if performance[key] is None:
+                # Handle the None value appropriately here
+                # For example, set cell.value to '-' or some default value
+                cell.value = None  # or another placeholder or default value  # or some default value
             else:
-                cell.value = float(performance[key].replace(
-                    ',', '').replace('%', '')) / 100
-            cell.number_format = '0,00%'
-
+                # Assuming performance[key] is a string that might contain commas or percent signs
+                value = performance[key].replace(',', '').replace('%', '')
+                cell.value = float(value) / 100
+            
+            cell.number_format = '0.00%'
         sheet = wb.sheets[3]
 
         column_headings = sheet.range('A1').expand('right').value
@@ -443,7 +446,7 @@ def write_to_sheet(data, performance, assets, filename, excel_file):
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(value.replace(
                         ',', '').replace('%', '')) / 100
-                    cell.number_format = '0,00%'
+                    cell.number_format = '0.00%'
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
@@ -471,7 +474,7 @@ if __name__ == '__main__':
     # TODO: comment it
     # TODO: comment it
 
-    pdf_folder = download_pdfs(excel_file)
+    # pdf_folder = download_pdfs(excel_file)
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 
