@@ -14,6 +14,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import NoSuchElementException
 import time
 from bs4 import BeautifulSoup
 import json
@@ -22,45 +25,65 @@ from requests_html import HTMLSession
 # pip install requests-html
 
 excel_file = 'BlackRock.xlsm'
+# excel_file = '16_milestone/BlackRock/BlackRock.xlsm'
 
 def get_data(url):
+
+    driver = webdriver.Chrome()
+    driver.get(url)
     AMC = 0.0
-    headers = {
-    'authority': 'www.blackrock.com',
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-    'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-    'cache-control': 'max-age=0',
-    'sec-ch-ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"',
-    'sec-fetch-dest': 'document',
-    'sec-fetch-mode': 'navigate',
-    'sec-fetch-site': 'none',
-    'sec-fetch-user': '?1',
-    'upgrade-insecure-requests': '1',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
-    }
 
-    session = HTMLSession()
-    response = session.get(url, headers=headers)
-    response.html.render(sleep=4, timeout=20.0)  # render the JavaScript-loaded content
+    # Use Selenium to get the page
+    driver.get(url)
 
-    cumulative_div = response.html.find('#subTabCumulative', first=True)
-    # print(cumulative_div.html)
-    date = cumulative_div.find('option[selected]', first=True).text.replace('/', ' ')
-    one_month = cumulative_div.find('td.oneMonth', first=True).text
-    one_year = cumulative_div.find('td.oneYear', first=True).text
-    three_years = cumulative_div.find('td.threeYear', first=True).text.replace('-','')
-    five_years = cumulative_div.find('td.fiveYear', first=True).text.replace('-','')
+    # Wait for JavaScript to load (if needed)
+    time.sleep(5)  # adjust sleep time according to your needs
+        
+    try:
+        # Поиск элемента с использованием By
+        container = driver.find_element(By.ID, "onetrust-group-container")
+        
+        if container.is_displayed():
+            # Нажимаем на кнопку
+            button = driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
+            button.click()
+        else:
+            print("Элемент 'onetrust-group-container' не виден на экране.")
 
-    OCF = response.html.find('div.col-onch span.data', first=True).text.replace('%', '')
+    except NoSuchElementException:
+        print("Элемент 'onetrust-group-container' не найден.")
+
+
+    # Now, pass the page source to BeautifulSoup
+    html_content = driver.page_source
+    with open('filename.txt', 'w', encoding='utf-8') as file:
+        file.write(html_content)
+
+    soup = BeautifulSoup(html_content, 'html.parser')
+    # Extract the data using BeautifulSoup
+    cumulative_div = soup.find(id='subTabCumulative')
+
+    # Extracting the date
+    date_p_tag = cumulative_div.find('p', class_='as-of-date')
+    date = date_p_tag.get_text(strip=True).replace('as of ', '') if date_p_tag else 'Date not found'
+
+    # Extracting values for different periods
+    one_month = cumulative_div.find('td', class_='oneMonth').get_text(strip=True)
+    one_year = cumulative_div.find('td', class_='oneYear').get_text(strip=True)
+    three_years = cumulative_div.find('td', class_='threeYear').get_text(strip=True).replace('-', '')
+    five_years = cumulative_div.find('td', class_='fiveYear').get_text(strip=True).replace('-', '')
+
+    OCF = soup.find('div', class_='col-onch').find('span', class_='data').get_text(strip=True).replace('%', '')
 
     try:
-        AMC = response.html.find('div.col-mer span.data', first=True).text.replace('%', '')
-        if AMC == '-':
-            AMC = 0
-    except:
+        AMC_element = soup.find('div', class_='col-mer').find('span', class_='data')
+        AMC = AMC_element.get_text(strip=True).replace('%', '')
+        AMC = 0 if AMC == '-' else float(AMC)
+    except Exception as e:
         AMC = 0
+
+    # Close the Selenium driver
+    driver.quit()
 
     print(date)
     print(one_month)
@@ -80,34 +103,7 @@ def get_data(url):
 
     # Извлечение всех div-элементов с классом "fund-component column"
     # breakpoint()
-    headers = {
-        'authority': 'www.blackrock.com',
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-        'cache-control': 'max-age=0',
-        'sec-ch-ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'document',
-        'sec-fetch-mode': 'navigate',
-        'sec-fetch-site': 'none',
-        'sec-fetch-user': '?1',
-        'upgrade-insecure-requests': '1',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
-    }
-
-    session = HTMLSession()
-    print(url)
-    response = session.get(url, headers=headers)
-
-    # Ожидание 4 секунды
-    response.html.render(sleep=8, timeout=20.0)
-
     # Если вы хотите работать с содержимым ответа
-    html_content = response.html.html
-
-    # print(html_content)
-
 
     # Extract JSON-like strings from the HTML content
     try:
