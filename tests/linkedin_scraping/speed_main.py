@@ -3,13 +3,14 @@ from bs4 import BeautifulSoup
 import json
 from concurrent.futures import ThreadPoolExecutor
 
-file_path = 'tests/linkedin_scraping/output.json'
+file_path = 'uk_output.json'
 
 # Open the file and load the JSON data
 with open(file_path, 'r') as file:
     json_data = json.load(file)
 
 def get_linkedin_link(query):
+    # query = query  + ' UK'
     headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'accept-language': 'en-US,en;q=0.9',
@@ -47,7 +48,6 @@ def get_linkedin_link(query):
         href = link['href']
         # print(href)
         exclusions = ['/images/', '/pub/', '/posts/', '/redir/', '/company/', '/school/', '/pulse/']
-
         # Check if the href does not contain any of the exclusions
         if 'linkedin' in href and '/in/' in href and not any(exclusion in href for exclusion in exclusions):            # print(href)
             return href
@@ -61,11 +61,11 @@ def update_json_data(item):
     return item
 
 if __name__ == "__main__":
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    with ThreadPoolExecutor(max_workers=14) as executor:
         results = list(executor.map(update_json_data, json_data))
 
     updated_json_data_with_actual_linkedin = json.dumps(results, indent=4)
-    file_name = 'updated_data_with_linkedin.json'
+    file_name = 'UK_updated_data_with_linkedin.json'
     with open(file_name, 'w') as file:
         file.write(updated_json_data_with_actual_linkedin)
 

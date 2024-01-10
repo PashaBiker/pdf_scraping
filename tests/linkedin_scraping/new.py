@@ -51,52 +51,8 @@ def get_title_name(query):
     soup = BeautifulSoup(response.text, 'html.parser')
     with open("text.html", 'w', encoding='UTF-8') as file:
         file.write(str(soup))
-    # print(soup)
-    #works_for = None
-    works_for = None
-    title = None
+    
+    # "Title" "Job Title" | "Works For" 
 
-    # Try to find "Works For"
-    try:
-        works_for_span = soup.find('span', title=lambda x: x and x.startswith('Works For:'))
-        if works_for_span:
-            works_for = works_for_span['title'].replace('Works For:', '').strip()
-    except:
-        pass
-
-    if not works_for:
-        try:
-            works_for_div = soup.find('strong', text='Works For:').parent
-            if works_for_div:
-                works_for = works_for_div.get_text(strip=True).replace('Works For:', '').strip()
-        except:
-            pass
-
-
-    print(soup)
-    # Try to find "Title"
-    title_div = soup.find('strong', text='Title:')
-    if title_div:
-        title = title_div.get_text(strip=True).replace('Title:', '').strip()
-
-    # Try to find "Job Title" if "Title" is not found
-    if not title:
-        # Extract "Job Title"
-        job_title_div = soup.find('strong', text='Job Title:')
-        print(job_title_div)
-        if job_title_div:
-            title = job_title_div.find_next_sibling(text=True).strip()
-
-    # Print results
-    if works_for:
-        print(f"Works For: {works_for}")
-    else:
-        print("Works For information not found")
-
-    if title:
-        print(f"Title: {title}")
-    else:
-        print("Title information not found")
-        
 if __name__ == '__main__':
     get_title_name('mark-weymouth-40a7b320')

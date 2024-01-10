@@ -9,11 +9,11 @@ def json_to_excel(json_data, excel_file_name):
     df.to_excel(excel_file_name, index=False)
 
 # Example usage
-file_path = 'updated_data_with_linkedin.json'
+file_path = 'First_part.json'
 
 # Open the file and load the JSON data
 with open(file_path, 'r') as file:
     json_data = json.load(file)
 
 
-json_to_excel(json_data, 'output.xlsx')
+json_to_excel(json_data, 'titles_worksfors.xlsx')
