@@ -13,4 +13,4 @@ def excel_to_json(excel_file, json_file):
         f.write(json_str)
 
 # Example usage
-excel_to_json('tests/linkedin_scraping/excel_title_working_for.xlsx', 'tests/linkedin_scraping/title_working_for.json')
+excel_to_json('namelink_titles_worksfors.xlsx', 'tests/linkedin_scraping/namelink_titles_worksfors.json')
