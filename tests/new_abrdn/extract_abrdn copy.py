@@ -8,7 +8,7 @@ from PyPDF2 import PdfReader
 import re
 import threading
 from queue import Queue
-
+import time
 excel_file = "tests/new_abrdn/abrdn.xlsm"
 
 pdf_folder = "tests/new_abrdn/Abrdn pdfs"
@@ -19,7 +19,8 @@ def download_worker(q, folder_name):
         'authority': 'www.abrdn.com',
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-        # 'cookie': 'abrdnjssintermediary#lang=en-GB; _gcl_au=1.1.1162956206.1702147479; _cs_c=1; ELOQUA=GUID=EDD2C907A9F947C8A383ECEC6CE4DDEB; OptanonAlertBoxClosed=2023-12-09T19:10:39.305Z; ORA_FPC=id=890b5499-d305-4770-bfcb-4fc600bd3d38; WTPERSIST=; abrdn-disclaimer=%5B%7B%22n%22%3A%22abrdnJssIntermediary%22%2C%22e%22%3A1709925040582%2C%22l%22%3A%22en-GB%22%7D%5D; bluekai_uid_plugin=ora.odc_dmp_bk_uuid,ceaAns9u999D94oA,ora.odc_dmp_bk_uuid_noslash,ceaAns9u999D94oA,ora.odc_source,bluekai; _ga=GA1.2.836657474.1702147479; _ga_TML7E2DDE5=GS1.1.1702491342.6.0.1702491343.59.0.0; _cs_id=2965f5a3-54fc-a02b-9ead-48dff31fec3f.1702147479.6.1702491343.1702491343.1.1736311479468; OptanonConsent=isGpcEnabled=0&datestamp=Wed+Dec+13+2023+20%3A15%3A43+GMT%2B0200+(%D0%92%D0%BE%D1%81%D1%82%D0%BE%D1%87%D0%BD%D0%B0%D1%8F+%D0%95%D0%B2%D1%80%D0%BE%D0%BF%D0%B0%2C+%D1%81%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82%D0%BD%D0%BE%D0%B5+%D0%B2%D1%80%D0%B5%D0%BC%D1%8F)&version=202304.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=4affb4e3-b240-488f-ad4e-af02837cf9ba&interactionCount=1&landingPath=NotLandingPage&groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0004%3A1&geolocation=UA%3B68&AwaitingReconsent=false; ASP.NET_SessionId=nyjcyk0ilvoq1ojocom4j242',
+        'cache-control': 'max-age=0',
+        # 'cookie': '_gcl_au=1.1.1162956206.1702147479; _cs_c=1; ELOQUA=GUID=EDD2C907A9F947C8A383ECEC6CE4DDEB; OptanonAlertBoxClosed=2023-12-09T19:10:39.305Z; ORA_FPC=id=890b5499-d305-4770-bfcb-4fc600bd3d38; WTPERSIST=; abrdn-disclaimer=%5B%7B%22n%22%3A%22abrdnJssIntermediary%22%2C%22e%22%3A1709925040582%2C%22l%22%3A%22en-GB%22%7D%5D; _ga=GA1.2.836657474.1702147479; _ga_TML7E2DDE5=GS1.1.1702491342.6.0.1702491343.59.0.0; _cs_id=2965f5a3-54fc-a02b-9ead-48dff31fec3f.1702147479.6.1702491343.1702491343.1.1736311479468; OptanonConsent=isGpcEnabled=0&datestamp=Wed+Dec+13+2023+20%3A15%3A43+GMT%2B0200+(%D0%92%D0%BE%D1%81%D1%82%D0%BE%D1%87%D0%BD%D0%B0%D1%8F+%D0%95%D0%B2%D1%80%D0%BE%D0%BF%D0%B0%2C+%D1%81%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82%D0%BD%D0%BE%D0%B5+%D0%B2%D1%80%D0%B5%D0%BC%D1%8F)&version=202304.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=4affb4e3-b240-488f-ad4e-af02837cf9ba&interactionCount=1&landingPath=NotLandingPage&groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0004%3A1&geolocation=UA%3B68&AwaitingReconsent=false; ASP.NET_SessionId=e4dknlrjokgt0vocvbuiq000',
         'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
@@ -35,7 +36,8 @@ def download_worker(q, folder_name):
         row_data = q.get()
         link, filename = row_data["link"], row_data["filename"]
 
-        response = requests.get(link, headers=headers)
+        response = requests.get(link, headers=headers, timeout=15)
+        # time.sleep(4)
         if not filename:
             filename = link.split('/')[-1]
 
