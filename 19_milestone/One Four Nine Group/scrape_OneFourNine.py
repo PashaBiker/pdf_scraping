@@ -119,8 +119,8 @@ def write_to_sheet(pdf_link, spreadsheet):
 
 if __name__ == '__main__':
     # enter the name of the excel file
-    # excel_file = '19_milestone\One Four Nine Group\One Four Nine Group.xlsm'
-    excel_file = 'One Four Nine Group.xlsm'
+    excel_file = '19_milestone\One Four Nine Group\One Four Nine Group.xlsm'
+    # excel_file = 'One Four Nine Group.xlsm'
 
     file_urls = get_urls(excel_file)
     unique_urls = {v: k for k, v in file_urls.items()}

@@ -17,9 +17,8 @@ import threading
 from queue import Queue
 import hashlib
 
-excel_file = '19_milestone\One Four Nine Group\One Four Nine Group.xlsm'
-pdf_folder = '19_milestone\One Four Nine Group\One Four Nine Group PDFs'
-
+excel_file = 'One Four Nine Group.xlsm'
+pdf_folder = 'One Four Nine Group PDFs'
 
 def download_worker(q, folder_name):
     headers = {
@@ -116,7 +115,7 @@ def get_data(pdf_path):
 
         # print(first_page_text)
         # print(second_page_text)
-        # breakpoint()
+
         for i,line in enumerate(first_page_text):
             if 'One Four Nine Fee' in line:
                 # print(line)
@@ -160,28 +159,6 @@ def get_data(pdf_path):
                 print(one_month, '1m')
                 print(one_year, '1y')
                 print(three_years, '3y')
-                # breakpoint()
-            # if '3 Years' in line:
-            #     numbers_line = first_page_text[i + 1]
-            #     print(numbers_line)
-            #     # Check if the line contains any float values. If not, get the next line.
-            #     if not re.search(r'\d+\.\d+', numbers_line):
-            #         numbers_line = first_page_text[i + 2]
-
-            #     numbers = re.findall(r'-?\d+\.\d+|N/A|-', numbers_line)
-            #     print("Extracted numbers:", numbers)  # Debugging information
-
-            #     # Convert numbers to float or None if 'N/A'
-            #     numbers = [float(num) if num != 'N/A' else None for num in numbers]
-
-            #     # Extract the specific values you're interested in using safe_get
-            #     one_month = safe_get(numbers, 0)
-            #     one_year = safe_get(numbers, 2)
-            #     three_years = safe_get(numbers, 3)
-
-            #     print(one_month,' 1m')
-            #     print(one_year,' 1y')
-            #     print(three_years,' 3y')
 
             if 'as at' in line:
                 date_line = line.split('as at ')
@@ -218,30 +195,6 @@ def get_data(pdf_path):
         asset_labels = sorted(asset_labels_pattern, key=lambda x: len(x), reverse=True)
         asset_allocation = {}
 
-        # for i, line in enumerate(second_page_text):
-        #     # Check if a line contains a percentage value
-        #     if "(" in line and "%" in line:
-        #         percentage = line.split('(')[-1].split(')')[0]
-                
-        #         # Check the current line for labels
-        #         asset_label_found = False
-        #         for label in asset_labels:
-        #             if label in line:
-        #                 asset_allocation[label] = percentage.replace('%','')
-        #                 asset_label_found = True
-        #                 break
-                
-        #         # If no label is found in the current line, check the previous line
-        #         if not asset_label_found:
-        #             # Get combined labels from multiple lines
-        #             combined_previous = second_page_text[i-1]
-        #             combined_current = " ".join(line.split(' ')[:-1])  # Excluding the last word which contains the percentage
-        #             combined_label = combined_previous + " " + combined_current
-
-        #             for label in asset_labels:
-        #                 if label in combined_label:
-        #                     asset_allocation[label] = percentage.replace('%','')
-        #                     break
         for line in second_page_text:
             matching_labels = [label for label in asset_labels if label in line]
             if matching_labels:
@@ -292,27 +245,27 @@ def write_to_sheet(OFN_fee, UF_fee, one_month, one_year, three_years, assets, sp
                 cellc = sheet.range('C'+str(i+1))
                 if OFN_fee is not None:
                     cellc.value = float(OFN_fee)/100
-                    cellc.number_format = '0,00%'
+                    cellc.number_format = '0.00%'
                 
                 celld = sheet.range('D'+str(i+1))
                 if UF_fee is not None:
                     celld.value = float(UF_fee)/100
-                    celld.number_format = '0,00%'
+                    celld.number_format = '0.00%'
                 
                 celle = sheet.range('E'+str(i+1))
                 if one_month is not None:
                     celle.value = float(one_month)/100
-                    celle.number_format = '0,00%'
+                    celle.number_format = '0.00%'
 
                 cellf = sheet.range('F'+str(i+1))
                 if one_year is not None:
                     cellf.value = float(one_year)/100
-                    cellf.number_format = '0,00%'
+                    cellf.number_format = '0.00%'
 
                 cellg = sheet.range('G'+str(i+1))
                 if three_years   is not None:
                     cellg.value = float(three_years)/100
-                    cellg.number_format = '0,00%'
+                    cellg.number_format = '0.00%'
                 
         wb.save()
 
@@ -344,7 +297,7 @@ def write_to_sheet(OFN_fee, UF_fee, one_month, one_year, three_years, assets, sp
                     cell = sheet.range(
                         f'{column_letter_from_index(column_index)}{i+1}')
                     cell.value = float(str(value).replace(',', '')) / 100
-                    cell.number_format = '0,00%'
+                    cell.number_format = '0.00%'
 
 
     except Exception as e:
@@ -375,7 +328,7 @@ if __name__ == '__main__':
 # TODO UNCOMENT FIRST
 # TODO UNCOMENT FIRST
 
-    # pdf_folder = download_pdfs(excel_file) 
+    pdf_folder = download_pdfs(excel_file) 
 
     pdfs = glob.glob(pdf_folder + '/*.pdf')
 

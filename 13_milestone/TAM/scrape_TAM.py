@@ -35,23 +35,28 @@ def scrape_links(file_urls):
                 response = session.get(url, headers=headers)
                 request_content = response.content
                 soup = BeautifulSoup(request_content, 'html.parser')
-                rows = soup.select('table.table tr')  # выбираем все строки таблицы
-                h2_text = soup.find('div', class_='heading topmargin').find('h2').text.strip()
-                addition_text = re.search(r"Our (.+?) investment solution", h2_text)
-                # pdf_links = {}
-                str(addition_text)
+                # Base URL for links that don't start with 'http'
+                base_url = 'https://www.tamassetmanagement.com'
 
-                # Пропускаем первую строку (заголовок таблицы)
-                for row in rows[1:]:
-                    columns = row.find_all('td')  # выбираем все ячейки текущей строки
-                    
-                    name = columns[0].text.strip()  # извлекаем имя (название портфолио)
-                    
-                    link_tag = columns[-1].find('a')  # находим ссылку на pdf в 6-й колонке (индекс 5)
-                    
-                    if link_tag:
-                        link = link_tag['href']
-                        pdf_links[addition_text.group(1)+' '+name] = link
+                # Find all the <tr> elements
+                for tr in soup.find_all('tr'):
+                    # The first <td> in each <tr> should contain the portfolio name
+                    tds = tr.find_all('td')
+                    if tds and len(tds) > 1:
+                        portfolio_name = tds[0].get_text(strip=True)
+                        # Iterate over all <td> elements, starting from the second one
+                        for td in tds[1:]:
+                            pdf_link_tag = td.find('a')
+                            if pdf_link_tag and 'href' in pdf_link_tag.attrs:
+                                link = pdf_link_tag['href']
+                                # Prepend base URL if needed
+                                if not link.startswith('http'):
+                                    link = base_url + link
+                                # Extract the type from the link and create a new key
+                                match = re.search(r'/(active|enhanced-passive|sustainable-world|sharia)-([^-]+)-', link)
+                                if match:
+                                    type_name = match.group(1).replace('-', ' ').title() + ' ' + portfolio_name
+                                    pdf_links[type_name] = link
 
                 # print(pdf_links)
                 # Print the dictionary
@@ -117,6 +122,7 @@ def write_to_sheet(pdf_link, spreadsheet):
 if __name__ == '__main__':
     # enter the name of the excel file
     excel_file = 'TAM Asset Management.xlsm'
+    # excel_file = '13_milestone/TAM/TAM Asset Management.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)
