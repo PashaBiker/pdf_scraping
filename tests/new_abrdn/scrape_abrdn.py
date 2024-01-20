@@ -130,6 +130,7 @@ def write_to_sheet(pdf_link, spreadsheet):
 if __name__ == '__main__':
     # enter the name of the excel file
     excel_file = 'abrdn.xlsm'
+    excel_file = 'tests/new_abrdn/abrdn.xlsm'
 
     file_urls = get_urls(excel_file)
     pdf_link = scrape_links(file_urls)

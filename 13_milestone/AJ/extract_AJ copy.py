@@ -27,8 +27,8 @@ def get_data(file):
     pages = pdf2image.convert_from_path(file,
                                         dpi=400, 
                                         first_page=2,
-                                        # first_page=48,
-                                        # last_page=49,
+                                        # first_page=38,
+                                        # last_page=39,
                                         poppler_path=poppler_path)
 
     if not os.path.exists(directory):
@@ -66,6 +66,8 @@ def get_data(file):
             .replace(',.','.')
             .replace('ngoing charges figur F .139','OCF 0.73%')
             .replace('h f F 0.39%','OCF 0.39%')
+            .replace('Pactive MPS 3 -1.47 13.53 14.44','Pactive MPS 3 2.94 -1.47 13.53 14.44')
+            .replace('Active MPS 6 2.23 372','Active MPS 6 2.23 -3.72')
             for line in text.split('\n') if line.strip() != ''
         ]
         # Check if page is even using its index

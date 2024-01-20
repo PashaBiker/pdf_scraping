@@ -65,6 +65,8 @@ def get_data(file):
             .replace('North Ameri i', 'North America equity')
             .replace(',.','.')
             .replace('ngoing charges figur F .139','OCF 0.73%')
+            .replace('Pactive MPS 3 -1.47 13.53 14.44','Pactive MPS 3 2.94 -1.47 13.53 14.44')
+            .replace('Active MPS 6 2.23 372','Active MPS 6 2.23 -3.72')
             .replace('h f F 0.39%','OCF 0.39%')
             for line in text.split('\n') if line.strip() != ''
         ]
